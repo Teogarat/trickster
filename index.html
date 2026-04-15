@@ -3,956 +3,795 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Trickster</title>
+  <title>Трикстер 3.5 — финальный бой</title>
   <style>
-    :root {
-      --bg: #07142d;
-      --panel: #0c1d3f;
-      --panel-2: #09152d;
-      --line: #1d3566;
-      --text: #f4f7ff;
-      --muted: #9fb3de;
-      --accent: #8b5cf6;
-      --danger: #e11d48;
-      --mana: #0ea5e9;
-      --stam: #64748b;
-      --warn: #d97706;
-      --ok: #10b981;
+    :root{
+      --bg:#07142d; --panel:#0c1d3f; --panel2:#09152d; --line:#1d3566;
+      --text:#f4f7ff; --muted:#9fb3de; --accent:#9333ea; --good:#86efac; --warn:#fde68a; --bad:#fca5a5;
     }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: Inter, Segoe UI, Arial, sans-serif;
-      background: linear-gradient(180deg, #030b19, var(--bg));
-      color: var(--text);
-    }
-    .app {
-      max-width: 1320px;
-      margin: 0 auto;
-      padding: 12px;
-      display: grid;
-      grid-template-columns: 340px 1fr;
-      gap: 8px;
-    }
-    .stack { display: grid; gap: 8px; }
-    .card {
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 16px;
-      padding: 12px;
-      box-shadow: 0 12px 30px rgba(0,0,0,.25);
-    }
-    .title { font-size: 18px; font-weight: 800; margin: 0 0 14px; }
-    .subtitle { font-size: 14px; font-weight: 700; margin: 0 0 10px; }
-    .grid2, .grid3, .grid4 {
-      display: grid;
-      gap: 12px;
-    }
-    .grid2 { grid-template-columns: repeat(2, minmax(0,1fr)); }
-    .grid3 { grid-template-columns: repeat(3, minmax(0,1fr)); }
-    .grid4 { grid-template-columns: repeat(4, minmax(0,1fr)); }
-    label {
-      display: block;
-      font-size: 13px;
-      color: var(--muted);
-      margin-bottom: 6px;
-    }
-    input, select {
-      width: 100%;
-      background: #f3f4f6;
-      color: #111827;
-      border: 1px solid #d1d5db;
-      border-radius: 10px;
-      padding: 9px 10px;
-      font-size: 16px;
-      font-weight: 600;
-    }
-    .fight-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-    .panel {
-      background: var(--panel-2);
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      padding: 12px;
-    }
-    .mono { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
-    .state-line { font-size: 18px; line-height: 1.6; }
-    .bar { letter-spacing: 2px; color: #dbeafe; }
-    .badges { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
-    .badge {
-      background: #f8fafc;
-      color: #0f172a;
-      border-radius: 999px;
-      padding: 5px 10px;
-      font-weight: 700;
-      font-size: 14px;
-    }
-    .btns {
-      display: grid;
-      display:flex;
-      flex-wrap:wrap;
-      gap: 8px;
-      margin-top: 12px;
-    }
-    button {
-      border: 0;
-      border-radius: 12px;
-      padding: 10px 12px;
-      font-size: 16px;
-      font-weight: 800;
-      color: white;
-      cursor: pointer;
-      min-height: 46px;
-    }
-    button:hover { filter: brightness(1.07); }
-    .b-phys, .b-mag { background: #0f172a; border: 1px solid var(--line); }
-    .b-hp { background: var(--danger); }
-    .b-mp { background: #0f77b8; }
-    .b-st { background: #334c70; }
-    .b-cast { background: linear-gradient(90deg, #6d28d9, #9333ea); min-width: 220px; flex: 1 1 220px; }
-    .b-reset { background: #c95f00; }
-    .stats-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 8px; }
-    .mini {
-      background: var(--panel-2);
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      padding: 12px;
-    }
-    .mini .k { color: var(--muted); font-size: 14px; }
-    .mini .v { font-size: 28px; font-weight: 900; margin-top: 8px; }
-    .log {
-      height: 420px;
-      overflow: auto;
-      background: #041022;
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      padding: 12px;
-      display: grid;
-      gap: 8px;
-    }
-    .entry {
-      background: #071932;
-      border: 1px solid #233e73;
-      border-radius: 12px;
-      padding: 10px 12px;
-      white-space: pre-wrap;
-      font-size: 16px;
-      line-height: 1.55;
-      font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
-      color: #fff;
-    }
-    .row-head { display: flex; gap: 8px; align-items: center; margin-bottom: 10px; }
-    .muted { color: var(--muted); }
-    .calc {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0,1fr));
-      gap: 12px;
-      margin-top: 12px;
-    }
-    .calc .mini .v { font-size: 28px; }
-    @media (max-width: 1200px) {
-      .app { grid-template-columns: 1fr; }
-      .stats-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
-      .fight-grid { grid-template-columns: 1fr; }
-    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:linear-gradient(180deg,#030b19,var(--bg));color:var(--text)}
+    .app{max-width:1450px;margin:0 auto;padding:12px;display:grid;grid-template-columns:390px 1fr;gap:10px;align-items:start}
+    .stack{display:grid;gap:10px;align-content:start}
+    .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:12px;box-shadow:0 12px 30px rgba(0,0,0,.25)}
+    .title{font-size:18px;font-weight:800;margin:0 0 14px}
+    .subtitle{font-size:14px;font-weight:700;margin:0 0 10px}
+    .grid2,.grid3,.grid4{display:grid;gap:12px}
+    .grid2{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .grid3{grid-template-columns:repeat(3,minmax(0,1fr))}
+    .grid4{grid-template-columns:repeat(4,minmax(0,1fr))}
+    label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+    input,select{width:100%;background:#f3f4f6;color:#111827;border:1px solid #d1d5db;border-radius:10px;padding:9px 10px;font-size:16px;font-weight:600}
+    .fight-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .panel{background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:12px}
+    .mono{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+    .state-line{font-size:15px;line-height:1.6}
+    .bar{letter-spacing:2px;color:#dbeafe}
+    .badges,.btns{display:flex;gap:8px;flex-wrap:wrap}
+    .badges{margin-bottom:12px}
+    .badge,.pill{background:#f8fafc;color:#0f172a;border-radius:999px;padding:5px 10px;font-weight:700;font-size:13px}
+    .pill.dark{background:#0f172a;color:#fff;border:1px solid var(--line)}
+    button{border:0;border-radius:12px;padding:10px 12px;font-size:15px;font-weight:800;color:#fff;cursor:pointer;min-height:46px}
+    .btns button{type:button}
+    button:disabled{opacity:.45;cursor:not-allowed}
+    .b-start{background:linear-gradient(90deg,#b91c1c,#dc2626)}
+    .b-reset{background:#c95f00}
+    .b-cast{background:linear-gradient(90deg,#6d28d9,#9333ea);min-width:220px;flex:1 1 220px}
+    .b-shadow{background:linear-gradient(90deg,#0f766e,#14b8a6);min-width:180px}
+    .b-potion{background:linear-gradient(90deg,#1d4ed8,#2563eb)}
+    .b-sim{background:#374151;border:1px solid var(--line)}
+    .mini{background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:12px}
+    .mini .k{color:var(--muted);font-size:13px}
+    .mini .v{font-size:22px;font-weight:900;margin-top:8px}
+    .log{height:620px;overflow:auto;background:#041022;border:1px solid var(--line);border-radius:14px;padding:12px;display:grid;gap:8px}
+    .entry{background:#071932;border:1px solid #233e73;border-radius:12px;padding:10px 12px;white-space:pre-wrap;font-size:15px;line-height:1.5;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;color:#fff}
+    .effect-card,.skill{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:10px;margin-bottom:8px}
+    .name{font-weight:800;margin-bottom:6px}
+    .desc{color:var(--muted);font-size:13px;line-height:1.45}
+    .good{color:var(--good)} .warn{color:var(--warn)} .bad{color:var(--bad)}
+    .sim-wrap{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:10px}
+    @media (max-width:1250px){.app{grid-template-columns:1fr}.fight-grid{grid-template-columns:1fr}.sim-wrap,.grid4{grid-template-columns:repeat(2,minmax(0,1fr))}}
   </style>
 </head>
 <body>
-  <div class="app">
-    <div class="stack">
-      <div class="card">
-        <h2 class="title">Трикстер — показательный тест</h2>
-        <div class="grid2">
-          <div>
-            <label>ХП</label>
-            <input id="pMaxHp" type="number" value="3500" />
-          </div>
-          <div>
-            <label>МП</label>
-            <input id="pMaxMp" type="number" value="250" />
-          </div>
-          <div>
-            <label>СТ</label>
-            <input id="pMaxSt" type="number" value="250" />
-          </div>
-          <div>
-            <label>Сила</label>
-            <input id="pStr" type="number" value="800" />
-          </div>
-          <div>
-            <label>Интеллект</label>
-            <input id="pInt" type="number" value="800" />
-          </div>
-          <div>
-            <label>Физ. урон оружия</label>
-            <input id="pPhysWeapon" type="number" value="300" />
-          </div>
-          <div>
-            <label>Маг. урон оружия</label>
-            <input id="pMagWeapon" type="number" value="300" />
-          </div>
-          <div>
-            <label>Удача</label>
-            <input id="pLuck" type="number" value="200" />
-          </div>
-          <div>
-            <label>Уровень умений</label>
-            <input id="pSkillLevel" type="number" value="16" />
-          </div>
-          <div>
-            <label>Крит множитель</label>
-            <input id="pCrit" type="number" step="0.1" value="6" />
-          </div>
-        </div>
-        <div class="calc">
-          <div class="mini">
-            <div class="k">Физ. атака</div>
-            <div class="v" id="calcPhys">0–0</div>
-          </div>
-          <div class="mini">
-            <div class="k">Маг. атака</div>
-            <div class="v" id="calcMag">0–0</div>
-          </div>
-        </div>
+<div class="app">
+  <div class="stack">
+    <div class="card">
+      <h2 class="title">Трикстер — финальная сборка</h2>
+      <div class="grid2">
+        <div><label>ХП</label><input id="pMaxHp" type="number" value="3500"></div>
+        <div><label>МП</label><input id="pMaxMp" type="number" value="250"></div>
+        <div><label>СТ</label><input id="pMaxSt" type="number" value="250"></div>
+        <div><label>Сила</label><input id="pStr" type="number" value="800"></div>
+        <div><label>Интеллект</label><input id="pInt" type="number" value="800"></div>
+        <div><label>Физ. урон оружия</label><input id="pPhysWeapon" type="number" value="300"></div>
+        <div><label>Маг. урон оружия</label><input id="pMagWeapon" type="number" value="300"></div>
+        <div><label>Базовая удача</label><input id="pLuck" type="number" value="200"></div>
+        <div><label>Ур. Нестабильного потенциала</label><input id="pUnstableLevel" type="number" value="16"></div>
+        <div><label>Ур. Бога обмана</label><input id="pGodLevel" type="number" value="16"></div>
+        <div><label>Крит шанс (0–1)</label><input id="pCritChance" type="number" step="0.01" value="1"></div>
+        <div><label>Крит множитель</label><input id="pCritMult" type="number" step="0.1" value="6"></div>
+        <div><label>Множитель всплеска</label><input id="pBurstMult" type="number" step="0.1" value="3"></div>
       </div>
-
-      <div class="card">
-        <h2 class="title">Враг</h2>
-        <div class="grid2">
-          <div>
-            <label>ХП</label>
-            <input id="eMaxHp" type="number" value="50000" />
-          </div>
-          <div>
-            <label>Урон врага</label>
-            <input id="eAttack" type="number" value="300" />
-          </div>
-          <div>
-            <label>Тип урона</label>
-            <select id="eDamageType">
-              <option value="physical">Физический</option>
-              <option value="magical" selected>Магический</option>
-              <option value="mixed">Смешанный</option>
-            </select>
-          </div>
-          <div>
-            <label>Щит физ.</label>
-            <input id="ePhysShield" type="number" value="0" />
-          </div>
-          <div>
-            <label>Щит маг.</label>
-            <input id="eMagShield" type="number" value="0" />
-          </div>
-        </div>
+      <div class="grid4" style="margin-top:12px">
+        <div class="mini"><div class="k">Физ. атака</div><div class="v" id="calcPhys">0</div></div>
+        <div class="mini"><div class="k">Маг. атака</div><div class="v" id="calcMag">0</div></div>
+        <div class="mini"><div class="k">Удача в бою</div><div class="v" id="calcLuck">0</div></div>
+        <div class="mini"><div class="k">Средний всплеск</div><div class="v" id="calcBurstAvg">0</div></div>
       </div>
     </div>
 
-    <div class="stack">
-      <div class="card">
-        <div class="row-head">
-          <div class="badge" id="turnBadge">Ход 1</div>
-          <div class="badge" id="glyphCountBadge">Открыто глифов: 0</div>
-        </div>
+    <div class="card">
+      <h2 class="title">Умения Трикстера</h2>
+      <div class="skill"><div class="name">[ ⚜️ ] Нестабильный потенциал</div><div class="desc">Минимальный магический урон заклинаний равен 0, максимальный x3. Прокачка: +1% к магическому, физическому и маг. урону за уровень.</div></div>
+      <div class="skill"><div class="name">[ ⚜️ ] Бог обмана</div><div class="desc">В начале боя 25% шанс избежать урона. При атаке с вероятностью 10% вызывает случайный защитный эффект. Чем выше удача, тем выше шанс.</div></div>
+      <div class="skill"><div class="name">[ ⚜️ ] Змеиный оскал</div><div class="desc">С 50% шансом в начале боя накладывает яд 20% от физ. атаки до конца хода. Это чистый урон: игнорирует щит, блок и защиту.</div></div>
+      <div class="skill"><div class="name">[ ⚜️ ] Мистический всплеск</div><div class="desc">Вызывает мистический луч с различными эффектами. Стоимость 10–50 маны. 95% на один луч и 5% на двойной.</div></div>
+      <div class="skill"><div class="name">[ ⚜️ ] Теневой шаг</div><div class="desc">Телепортируется за спину к противнику, не получает урон. Наносит x1.2 физ. атаки. Откат 5 ходов. Стоимость 50 маны.</div></div>
+      <div class="skill"><div class="name">[ ⚜️ ] Трикстер</div><div class="desc">Автоатака магией всегда 0. Любая атака связанная с физой = физ. атака + 0.2 от маг. атаки.</div></div>
+      <div class="skill"><div class="name">Зелья</div><div class="desc">Зелье ХП: 35% от максимального ХП. Зелье МП: 40% от максимального МП. По 3 штуки каждого вида на бой.</div></div>
+    </div>
 
-        <div class="fight-grid">
-          <div class="panel">
-            <div class="subtitle">✦ Трикс</div>
-            <div id="playerState" class="mono state-line"></div>
-          </div>
-          <div class="panel">
-            <div class="subtitle">✦ ☠︎︎Враг</div>
-            <div id="enemyState" class="mono state-line"></div>
-          </div>
-        </div>
-
-        <div class="badges" id="statusBadges"></div>
-
-        <div class="btns">
-          <button class="b-reset" id="btnReset">Сброс</button>
-        </div>
+    <div class="card">
+      <h2 class="title">✦ ☠︎︎ Примарх Некродион</h2>
+      <div class="grid2">
+        <div><label>ХП</label><input id="eMaxHp" type="number" value="30000"></div>
+        <div><label>Физ. атака</label><input id="eAttack" type="number" value="300"></div>
+        <div><label>Физ. защита</label><input id="ePhysDef" type="number" value="5000"></div>
+        <div><label>Маг. защита</label><input id="eMagDef" type="number" value="5000"></div>
       </div>
-
-      <div class="card">
-        <h2 class="title">Статистика</h2>
-        <div class="stats-grid">
-          <div class="mini"><div class="k">Прогонов</div><div class="v" id="runs">0</div></div>
-          <div class="mini"><div class="k">Средний урон каста</div><div class="v" id="avgCast">0</div></div>
-                    <div class="mini"><div class="k">Побед Трикса</div><div class="v" id="wins">0</div></div>
-          <div class="mini"><div class="k">Поражений</div><div class="v" id="losses">0</div></div>
-          <div class="mini"><div class="k">Средняя длительность боя</div><div class="v" id="avgTurns">0.0</div></div>
-        </div>
-        <div style="display:flex; gap:12px; margin-top:14px;">
-          <button class="b-mag" id="btnSim4">Прогон 4</button>
-          <button class="b-mag" id="btnSim8">Прогон 8</button>
-          <button class="b-mag" id="btnSim10">Прогон 10</button>
-        </div>
+      <div style="margin-top:10px" class="desc">
+        💀 <b>Сбор костей</b> — если ранен, на своём ходу с шансом 25% восстанавливает 20% от потерянного ХП.<br>
+        🛡️ <b>Блок</b> — 30% шанс полностью заблокировать входящую атаку.<br>
+        🧲 <b>Подавление рассудка</b> — пассивно снижает вашу удачу на 100 на весь бой.<br>
+        👊 <b>Унижение</b> — 20% шанс вместо обычной атаки швырнуть тебя об землю и дать x3 от макс. физ. урона.
       </div>
+    </div>
 
-      <div class="card">
-        <h2 class="title">Лог боя</h2>
-        <div class="log" id="log"></div>
-        <div class="btns" style="margin-top:12px;">
-          <button class="b-hp" id="btnHp">❤️ ХП (3)</button>
-          <button class="b-mp" id="btnMp">💙 МП (2)</button>
-          <button class="b-st" id="btnSt">🤍 СТ (2)</button>
-          <button class="b-phys" id="btnPhys">🗡 Физ атака</button>
-          <button class="b-mag" id="btnMag">✨ Маг атака</button>
-          <button class="b-cast" id="btnCast">[ ⚜️ ] Как там было?</button>
-        </div>
+    <div class="card">
+      <h2 class="title">Эффекты луча (20 эффектов, равные шансы между эффектами)</h2>
+      <div class="badges">
+        <div class="pill">Коэф удачи: <span id="luckCoefBadge">0.000</span></div>
+        <div class="pill">Старт уклон: <span id="startAvoidBadge">0%</span></div>
+        <div class="pill">Эффект луча: <span id="godProcBadge">0%</span></div>
       </div>
+      <div id="effectsPreview"></div>
     </div>
   </div>
 
-  <script>
-    const countDistribution = [
-      { min: 50, max: 199, probs: [0.6, 0.3, 0.1, 0, 0, 0] },
-      { min: 200, max: 399, probs: [0.35, 0.35, 0.2, 0.1, 0, 0] },
-      { min: 400, max: 699, probs: [0.15, 0.25, 0.3, 0.2, 0.1, 0] },
-      { min: 700, max: 999, probs: [0.05, 0.15, 0.25, 0.25, 0.2, 0.1] },
-      { min: 1000, max: 99999, probs: [0, 0.1, 0.15, 0.25, 0.25, 0.25] },
-    ];
+  <div class="stack">
+    <div class="card">
+      <div class="badges" id="topBadges">
+        <div class="badge" id="roundBadge">Раунд 1</div>
+        <div class="badge" id="battleBadge">Бой не начат</div>
+        <div class="badge" id="shadowCdBadge">Теневой шаг: готов</div>
+        <div class="badge" id="poisonBadge">Змеиный оскал: нет</div>
+      </div>
+      <div class="fight-grid">
+        <div class="panel"><div class="subtitle">✦ Трикстер</div><div id="playerState" class="mono state-line"></div></div>
+        <div class="panel"><div class="subtitle">✦ ☠︎︎ Примарх Некродион</div><div id="enemyState" class="mono state-line"></div></div>
+      </div>
+      <div class="badges" id="statusBadges"></div>
 
-    const rarityMultipliers = [
-      { min: 50, max: 199, values: { common: 1, uncommon: 1, rare: 0.7, very_rare: 0.5, super_rare: 0.3 } },
-      { min: 200, max: 399, values: { common: 0.9, uncommon: 1, rare: 1, very_rare: 0.8, super_rare: 0.5 } },
-      { min: 400, max: 699, values: { common: 0.7, uncommon: 1, rare: 1.2, very_rare: 1, super_rare: 0.8 } },
-      { min: 700, max: 999, values: { common: 0.5, uncommon: 0.9, rare: 1.3, very_rare: 1.2, super_rare: 1 } },
-      { min: 1000, max: 99999, values: { common: 0.4, uncommon: 0.8, rare: 1.5, very_rare: 1.3, super_rare: 1.2 } },
-    ];
+      <h2 class="title" style="margin-top:8px">Лог боя</h2>
+      <div class="log" id="log"></div>
+      <div class="btns" style="margin-top:12px">
+        <button type="button" class="b-start" id="btnStart">Начало боя</button>
+        <button type="button" class="b-reset" id="btnReset">Сброс</button>
+        <button type="button" class="b-cast" id="btnCast" disabled>[ ⚜️ ] Мистический всплеск</button>
+        <button type="button" class="b-shadow" id="btnShadow" disabled>[ ⚜️ ] Теневой шаг</button>
+        <button type="button" class="b-potion" id="btnPhysAttack" disabled>Физ. атака</button>
+        <button type="button" class="b-potion" id="btnMagAttack" disabled>Маг. атака</button>
+        <button type="button" class="b-potion" id="btnHpPotion" disabled>Зелье ХП</button>
+        <button type="button" class="b-potion" id="btnMpPotion" disabled>Зелье МП</button>
+        <button type="button" class="b-sim" id="btnSim4">Прогон 4</button>
+        <button type="button" class="b-sim" id="btnSim8">Прогон 8</button>
+        <button type="button" class="b-sim" id="btnSim20">Прогон 20</button>
+      </div>
+      <div class="sim-wrap">
+        <div class="mini"><div class="k">Прогонов</div><div class="v" id="runs">0</div></div>
+        <div class="mini"><div class="k">Побед</div><div class="v" id="wins">0</div></div>
+        <div class="mini"><div class="k">Поражений</div><div class="v" id="losses">0</div></div>
+        <div class="mini"><div class="k">Ср. раундов</div><div class="v" id="avgTurns">0.0</div></div>
+        <div class="mini"><div class="k">Ср. урон всплеска</div><div class="v" id="avgCast">0</div></div>
+        <div class="mini"><div class="k">Ср. урон врага</div><div class="v" id="avgEnemy">0</div></div>
+        <div class="mini"><div class="k">Ср. урон яда</div><div class="v" id="avgPoison">0</div></div>
+        <div class="mini"><div class="k">Ср. урон шага</div><div class="v" id="avgShadow">0</div></div>
+      </div>
+    </div>
+  </div>
+</div>
 
-    const typeChances = [
-      { min: 50, max: 199, values: { Attack: 0.2, Debuff: 0.14, Heal: 0.06, Vampirism: 0.1, Buff: 0.14, Guard: 0.12, Chaos: 0.06, Poison: 0.08, Bleed: 0.08 } },
-      { min: 200, max: 399, values: { Attack: 0.18, Debuff: 0.13, Heal: 0.07, Vampirism: 0.12, Buff: 0.16, Guard: 0.1, Chaos: 0.08, Poison: 0.08, Bleed: 0.08 } },
-      { min: 400, max: 699, values: { Attack: 0.16, Debuff: 0.12, Heal: 0.08, Vampirism: 0.13, Buff: 0.16, Guard: 0.09, Chaos: 0.1, Poison: 0.08, Bleed: 0.08 } },
-      { min: 700, max: 999, values: { Attack: 0.15, Debuff: 0.11, Heal: 0.09, Vampirism: 0.13, Buff: 0.15, Guard: 0.08, Chaos: 0.1, Poison: 0.095, Bleed: 0.095 } },
-      { min: 1000, max: 99999, values: { Attack: 0.14, Debuff: 0.1, Heal: 0.1, Vampirism: 0.13, Buff: 0.15, Guard: 0.07, Chaos: 0.11, Poison: 0.1, Bleed: 0.1 } },
-    ];
+<script>
+const EFFECTS = [
+  {id:'shield10',name:'Получен щит на 10% от максимального ХП',desc:'[ ⚜️ ] Вы рефлекторно выставили руку вперёд, и луч внезапно стал щитом.',apply:(s,logs)=>{const n=Math.round(s.player.maxHp*0.10);s.player.shield+=n;logs.push('[ ⚜️ ] Вы рефлекторно выставили руку вперёд, и луч внезапно стал щитом.');logs.push('Получен щит на 10% от максимального ХП: +' + n + ' щита.');}},
+  {id:'shield15',name:'Получен щит на 15% от максимального ХП',desc:'[ ⚜️ ] Луч загустел и обволок вас защитной оболочкой.',apply:(s,logs)=>{const n=Math.round(s.player.maxHp*0.15);s.player.shield+=n;logs.push('[ ⚜️ ] Луч загустел и обволок вас защитной оболочкой.');logs.push('Получен щит на 15% от максимального ХП: +' + n + ' щита.');}},
+  {id:'shield20',name:'Получен щит на 20% от максимального ХП',desc:'[ ⚜️ ] Вы сами не поняли как, но теперь вокруг вас полноценный магический барьер.',apply:(s,logs)=>{const n=Math.round(s.player.maxHp*0.20);s.player.shield+=n;logs.push('[ ⚜️ ] Вы сами не поняли как, но теперь вокруг вас полноценный магический барьер.');logs.push('Получен щит на 20% от максимального ХП: +' + n + ' щита.');}},
 
-    const state = {
-      turn: 1,
-      logs: ["Песочница готова. Жми «Как там было?» и смотри, что натворит трикстер."],
-      statuses: [],
-      sim: { runs: 0, avgCastDamage: 0, avgEnemyDamage: 0, wins: 0, losses: 0, avgTurns: 0 },
-      player: {
-        maxHp: 3500, hp: 3500, maxMp: 250, mp: 250, maxSt: 250, st: 250,
-        strength: 800, intellect: 800, physWeapon: 300, magWeapon: 300,
-        physAtk: 1452, magAtk: 1452, physShield: 0, magShield: 0,
-        luck: 200, skillLevel: 16, critMultiplier: 6,
-        hpPotions: 3, mpPotions: 2, stPotions: 2,
-      },
-      enemy: {
-        maxHp: 50000, hp: 50000, attack: 300, damageType: 'magical', physShield: 0, magShield: 0,
-      }
-    };
+  {id:'red80',name:'Полученный урон снижен на 80%',desc:'[ ⚜️ ] Вы в последний момент дёрнулись, и основной урон прошёл мимо.',apply:(s,logs)=>{s.player.oneHitReduction=0.80;logs.push('[ ⚜️ ] Вы в последний момент дёрнулись, и основной урон прошёл мимо.');logs.push('Полученный урон снижен на 80%.');}},
+  {id:'red50',name:'Полученный урон снижен на 50%',desc:'[ ⚜️ ] Вы кое-как перенаправили удар.',apply:(s,logs)=>{s.player.oneHitReduction=0.50;logs.push('[ ⚜️ ] Вы кое-как перенаправили удар.');logs.push('Полученный урон снижен на 50%.');}},
+  {id:'red30',name:'Полученный урон снижен на 30%',desc:'[ ⚜️ ] Вы вроде пытались защититься...',apply:(s,logs)=>{s.player.oneHitReduction=0.30;logs.push('[ ⚜️ ] Вы вроде пытались защититься...');logs.push('Полученный урон снижен на 30%.');}},
 
-    const glyphs = [
+  {id:'dodgeAny',name:'Уклонение от любой атаки',desc:'[ ⚜️ ] Луч оказался слишком мощным, вас дёрнуло назад, вы споткнулись… и каким-то образом уклонились от атаки',apply:(s,logs)=>{s.player.dodgeNext=true;s.player.dodgeAnyNext=true;logs.push('[ ⚜️ ] Луч оказался слишком мощным, вас дёрнуло назад, вы споткнулись… и каким-то образом уклонились от атаки');logs.push('Уклонение от любой атаки.');}},
+  {id:'reflectAll',name:'Отражение урона врага, враг получает урон',desc:'[ ⚜️ ] Каким-то образом луч заставил врага атаковать самого себя',apply:(s,logs)=>{s.player.reflectNext=true;logs.push('[ ⚜️ ] Каким-то образом луч заставил врага атаковать самого себя');logs.push('Отражение урона врага, враг получает урон.');}},
 
-	// ================== ATTACK ==================
-	{ name:'Импульс', family:'Attack', subtype:'magical', luck:100, rarity:'common', weight:70,
-    apply:ctx=>ctx.totalDamage+=rollAtk(ctx.player.magAtk)*1.1*levelMul(ctx.player.skillLevel) },
+  {id:'blind',name:'Противник ослеплён на 1 ход (blind)',desc:'[ ⚜️ ] Вспышка света ударила прямо в глаз противнику. Никто не ожидал, что свет может драться.',apply:(s,logs)=>{s.enemy.blind=1;logs.push('[ ⚜️ ] Вспышка света ударила прямо в глаз противнику. Никто не ожидал, что свет может драться.');logs.push('Противник ослеплён на 1 ход (blind).');}},
+  {id:'stun',name:'Окаменение на 1 ход (stun)',desc:'[ ⚜️ ] Луч дёрнулся, захрустел - и противник застыл как статуя.',apply:(s,logs)=>{s.enemy.stun=1;logs.push('[ ⚜️ ] Луч дёрнулся, захрустел - и противник застыл как статуя.');logs.push('Окаменение на 1 ход (stun).');}},
 
-	{ name:'Перкуссио', family:'Attack', subtype:'physical', luck:150, rarity:'common', weight:70,
-    apply:ctx=>ctx.totalDamage+=rollAtk(ctx.player.physAtk)*1.1*levelMul(ctx.player.skillLevel) },
+  {id:'selfMinus10',name:'-10% от текущего ХП',desc:'[ ⚜️ ] В дымке от луча, вы вдруг увидели купающуюся молодую эльфийку, пощечина не заставила себя долго ждать',apply:(s,logs)=>{const dmg=Math.round(s.player.hp*0.10);s.player.hp=Math.max(0,s.player.hp-dmg);logs.push('[ ⚜️ ] В дымке от луча, вы вдруг увидели купающуюся молодую эльфийку, пощечина не заставила себя долго ждать');logs.push('-10% от текущего ХП: -' + dmg + ' ХП.');}},
+  {id:'healCoin',name:'90% - вы исцеляетесь на 50% ХП. 10% - враг благодарит вас и получает 20% ХП (РБ: 50% случайному)',desc:'[ ⚜️ ] Вы попытались направить энергию на восстановление…',apply:(s,logs)=>{logs.push('[ ⚜️ ] Вы попытались направить энергию на восстановление…');if(Math.random()<0.9){const heal=Math.round(s.player.maxHp*0.50);const before=s.player.hp;s.player.hp=Math.min(s.player.maxHp,s.player.hp+heal);logs.push('90% - вы исцеляетесь на 50% ХП: +' + (s.player.hp-before) + ' ХП.');}else{const heal=Math.round(s.enemy.maxHp*0.20);const before=s.enemy.hp;s.enemy.hp=Math.min(s.enemy.maxHp,s.enemy.hp+heal);logs.push('10% - враг благодарит вас и получает 20% ХП: +' + (s.enemy.hp-before) + ' ХП врагу.');}}},
+  {id:'vamp3',name:'2% вампиризма на 3 хода',desc:'[ ⚜️ ] В вас пробудился первобытный звериный голод.',apply:(s,logs)=>{s.player.vampTurns=3;s.player.vampPct=0.02;logs.push('[ ⚜️ ] В вас пробудился первобытный звериный голод.');logs.push('2% вампиризма на 3 хода.');}},
 
-	{ name:'Рокет', family:'Attack', subtype:'magical', luck:50, rarity:'common', weight:70,
-    apply:ctx=>ctx.totalDamage+=rollAtk(ctx.player.magAtk)*0.6*levelMul(ctx.player.skillLevel) },
-
-	{ name:'Дисрупцио', family:'Attack', subtype:'physical', luck:300, rarity:'uncommon', weight:25,
-    apply:ctx=>ctx.totalDamage+=rollAtk(ctx.player.physAtk)*1.3*levelMul(ctx.player.skillLevel) },
-
-	{ name:'Фрактура', family:'Attack', subtype:'physical', luck:100, rarity:'uncommon', weight:25,
-    apply:ctx=>ctx.totalDamage+=rollAtk(ctx.player.physAtk)*1.2*levelMul(ctx.player.skillLevel) },
-
-	{ name:'Руптура', family:'Attack', subtype:'magical', luck:150, rarity:'uncommon', weight:25,
-    apply:ctx=>ctx.totalDamage+=rollAtk(ctx.player.magAtk)*1.3*levelMul(ctx.player.skillLevel) },
-
-	{ name:'Контундо', family:'Attack', subtype:'physical', luck:50, rarity:'common', weight:70,
-    apply:ctx=>ctx.totalDamage+=rollAtk(ctx.player.physAtk)*1.0*levelMul(ctx.player.skillLevel) },
-
-	{ name:'Иктус', family:'Attack', subtype:'physical', luck:50, rarity:'common', weight:70,
-    apply:ctx=>ctx.totalDamage+=rollAtk(ctx.player.physAtk)*0.6*levelMul(ctx.player.skillLevel) },
-
-	{ name:'Вибраре', family:'Attack', subtype:'physical', luck:200, rarity:'rare', weight:10,
-    apply:ctx=>ctx.totalDamage+=rollAtk(ctx.player.physAtk)*1.8*levelMul(ctx.player.skillLevel) },
-
-	{ name:'Абракадабра', family:'Attack', subtype:'magical', luck:300, rarity:'uncommon', weight:25,
-    apply:ctx=>ctx.totalDamage+=rollAtk(ctx.player.magAtk)*1.2*levelMul(ctx.player.skillLevel) },
-
-	{ name:'Экспекто', family:'Attack', subtype:'magical', luck:50, rarity:'common', weight:70,
-    apply:ctx=>ctx.totalDamage+=rollAtk(ctx.player.magAtk)*1.0*levelMul(ctx.player.skillLevel) },
-
-	{ name:'Катастрофус', family:'Attack', subtype:'hybrid', luck:200, rarity:'super_rare', weight:1,
-    apply:ctx=>ctx.totalDamage+=Math.max(rollAtk(ctx.player.magAtk),rollAtk(ctx.player.physAtk))*5*levelMul(ctx.player.skillLevel) },
-
-	{ name:'Спаркл', family:'Attack', subtype:'magical', luck:150, rarity:'rare', weight:10,
-    apply:ctx=>ctx.totalDamage+=rollAtk(ctx.player.magAtk)*1.8*levelMul(ctx.player.skillLevel) },
-
-	{ name:'Ультима', family:'Attack', subtype:'hybrid', luck:400, rarity:'super_rare', weight:1,
-    apply:ctx=>ctx.totalDamage+=Math.max(rollAtk(ctx.player.magAtk),rollAtk(ctx.player.physAtk))*2 },
-
-	{ name:'Экзитиум', family:'Attack', subtype:'physical', luck:250, rarity:'very_rare', weight:4,
-    apply:ctx=>ctx.totalDamage+=rollAtk(ctx.player.physAtk)*1.4 },
-
-	{ name:'Дамнацио', family:'Attack', subtype:'magical', luck:250, rarity:'very_rare', weight:4,
-    apply:ctx=>ctx.totalDamage+=rollAtk(ctx.player.magAtk)*1.4 },
-
-	{ name:'Терминус', family:'Attack', subtype:'magical', luck:350, rarity:'very_rare', weight:4,
-    apply:ctx=>ctx.totalDamage+=rollAtk(ctx.player.magAtk)*1.5 },
-
-	{ name:'Руинам', family:'Attack', subtype:'physical', luck:350, rarity:'very_rare', weight:4,
-    apply:ctx=>ctx.totalDamage+=rollAtk(ctx.player.physAtk)*1.5 },
-
-	{ name:'Фаталис', family:'Attack', subtype:'hybrid', luck:650, rarity:'super_rare', weight:1,
-    apply:ctx=>ctx.totalDamage+=Math.max(rollAtk(ctx.player.magAtk),rollAtk(ctx.player.physAtk))*4 },
-
-	{ name:'Обливио', family:'Attack', subtype:'hybrid', luck:550, rarity:'super_rare', weight:1,
-    apply:ctx=>ctx.totalDamage+=Math.max(rollAtk(ctx.player.magAtk),rollAtk(ctx.player.physAtk))*3 },
-
-	// ================== DEBUFF ==================
-	{ name:'Табес', family:'Debuff', luck:50, rarity:'uncommon', weight:25,
-    apply:ctx=>addStatus(ctx.statuses,{id:'enemyAtkDown',name:'Табес',turns:3,kind:'enemyAtkDown',value:0.1}) },
-
-	{ name:'Морбус', family:'Debuff', luck:50, rarity:'common', weight:70,
-    apply:ctx=>addStatus(ctx.statuses,{id:'enemyAtkDown',name:'Морбус',turns:3,kind:'enemyAtkDown',value:0.05}) },
-
-	{ name:'Дебилитас', family:'Debuff', luck:400, rarity:'common', weight:70,
-    apply:ctx=>addStatus(ctx.statuses,{id:'selfDot',name:'Дебилитас',turns:3,kind:'selfDot',value:0.05}) },
-
-	{ name:'Коррупцио', family:'Debuff', luck:300, rarity:'uncommon', weight:25,
-    apply:ctx=>{ctx.player.physShield=0;ctx.player.magShield=0;ctx.enemy.physShield=0;ctx.enemy.magShield=0;} },
-
-	{ name:'Тенебрис', family:'Debuff', luck:300, rarity:'very_rare', weight:4,
-    apply:ctx=>{ctx.player.mp*=0.5;ctx.player.st*=0.5;} },
-
-	{ name:'Тимор', family:'Debuff', luck:500, rarity:'super_rare', weight:1,
-    apply:ctx=>ctx.nextGlyphPenalty=1 },
-
-	// ================== HEAL ==================
-	{ name:'Санатио', family:'Heal', luck:250, rarity:'uncommon', weight:25,
-    apply:ctx=>healPlayer(ctx,Math.round(ctx.player.maxHp*0.1),'Санатио') },
-
-	{ name:'Вита', family:'Heal', luck:150, rarity:'common', weight:70,
-    apply:ctx=>healPlayer(ctx,Math.round(ctx.player.maxHp*0.1),'Вита') },
-
-	{ name:'Регенерацио', family:'Heal', luck:200, rarity:'rare', weight:10,
-    apply:ctx=>addStatus(ctx.statuses,{id:'regen',name:'Регенерацио',turns:3,kind:'regen',value:Math.round(ctx.player.maxHp*0.015)}) },
-
-	{ name:'Курацио', family:'Heal', luck:400, rarity:'very_rare', weight:4,
-    apply:ctx=>healPlayer(ctx,Math.round(ctx.player.maxHp*0.05),'Курацио') },
-
-	{ name:'Виталис', family:'Heal', luck:50, rarity:'very_rare', weight:4,
-    apply:ctx=>healPlayer(ctx,Math.round(ctx.player.maxHp*0.25),'Виталис') },
-
-	{ name:'Виктус', family:'Heal', luck:500, rarity:'super_rare', weight:1,
-    apply:ctx=>{ctx.player.hp=clamp(ctx.player.hp+Math.round(ctx.player.maxHp*0.5),0,ctx.player.maxHp);ctx.player.mp=0;} },
-
-	// ================== VAMP ==================
-	{ name:'Абсорпцио', family:'Vampirism', luck:100, rarity:'common', weight:70,
-    apply:ctx=>ctx.pendingLifeSteal+=0.02 },
-
-	{ name:'Лайфстил', family:'Vampirism', luck:50, rarity:'uncommon', weight:25,
-    apply:ctx=>healPlayer(ctx,Math.round(ctx.player.maxHp*0.015),'Лайфстил') },
-
-	{ name:'Деворо', family:'Vampirism', luck:300, rarity:'very_rare', weight:4,
-    apply:ctx=>ctx.executeBonus=true },
-
-	{ name:'Экзаурио', family:'Vampirism', luck:200, rarity:'uncommon', weight:25,
-    apply:ctx=>ctx.totalDamage+=Math.round(ctx.player.maxHp*0.05) },
-
-	// ================== BUFF ==================
-	{ name:'Амплификацио', family:'Buff', luck:50, rarity:'common', weight:70,
-    apply:ctx=>ctx.castMultiplier*=1.2 },
-
-	{ name:'Потенциа', family:'Buff', luck:100, rarity:'uncommon', weight:25,
-    apply:ctx=>addStatus(ctx.statuses,{id:'nextDamage',name:'Потенциа',turns:1,kind:'nextDamage',value:0.2}) },
-
-	{ name:'Аугментум', family:'Buff', luck:150, rarity:'rare', weight:10,
-    apply:ctx=>addStatus(ctx.statuses,{id:'nextExtra',name:'Аугментум',turns:1,kind:'nextExtra',value:1}) },
-
-	{ name:'Энергис', family:'Buff', luck:200, rarity:'rare', weight:10,
-    apply:ctx=>ctx.flatBonusDamage+=Math.round(ctx.player.st*1.3) },
-
-	{ name:'Эмбери', family:'Buff', luck:200, rarity:'rare', weight:10,
-    apply:ctx=>ctx.flatBonusDamage+=Math.round(ctx.player.mp*1.3) },
-
-	{ name:'Дуалус', family:'Buff', luck:300, rarity:'very_rare', weight:4,
-    apply:ctx=>ctx.castHits=2 },
-
-	{ name:'Инвиктус', family:'Buff', luck:350, rarity:'super_rare', weight:1,
-    apply:ctx=>addStatus(ctx.statuses,{id:'invul',name:'Инвиктус',turns:1,kind:'invul',value:1}) },
-
-	// ================== GUARD ==================
-	{ name:'Скутум', family:'Guard', luck:50, rarity:'common', weight:70,
-    apply:ctx=>ctx.player.magShield+=Math.round(ctx.player.maxMp*0.1) },
-
-	{ name:'Эгида', family:'Guard', luck:100, rarity:'common', weight:70,
-    apply:ctx=>ctx.player.physShield+=Math.round(ctx.player.maxSt*0.1) },
-
-	{ name:'Фирмаментум', family:'Guard', luck:150, rarity:'rare', weight:10,
-    apply:ctx=>addStatus(ctx.statuses,{id:'reflect',name:'Фирмаментум',turns:2,kind:'reflect',value:0.3}) },
-
-	// ================== CHAOS ==================
-	{ name:'Мутацио', family:'Chaos', luck:100, rarity:'rare', weight:10,
-    apply:ctx=>ctx.enemy.maxHp*=1.1 },
-
-	{ name:'Парадоксум', family:'Chaos', luck:400, rarity:'uncommon', weight:25,
-    apply:ctx=>ctx.castMultiplier*=Math.random()<0.5?2:0.5 },
-
-	{ name:'Фортуна', family:'Chaos', luck:300, rarity:'very_rare', weight:4,
-    apply:ctx=>{ctx.castHits=3;ctx.castMultiplier*=0.5} },
-
-	{ name:'Алеатор', family:'Chaos', luck:150, rarity:'super_rare', weight:1,
-    apply:ctx=>addStatus(ctx.statuses,{id:'enemyHeals',name:'Алеатор',turns:1,kind:'enemyHeals',value:1}) },
-
-	// ================== POISON ==================
-	{ name:'Токсикум', family:'Poison', luck:300, rarity:'common', weight:70,
-    apply:ctx=>addStatus(ctx.statuses,{id:'poison'+Math.random(),name:'Токсикум',turns:2,kind:'poison',value:Math.round(rollAtk(ctx.player.magAtk)*0.05)}) },
-
-	{ name:'Ноксиа', family:'Poison', luck:200, rarity:'uncommon', weight:25,
-    apply:ctx=>addStatus(ctx.statuses,{id:'poison'+Math.random(),name:'Ноксиа',turns:3,kind:'poison',value:Math.round(rollAtk(ctx.player.magAtk)*0.04)}) },
-
-	// ================== BLEED ==================
-	{ name:'Инцезио', family:'Bleed', luck:300, rarity:'common', weight:70,
-    apply:ctx=>addStatus(ctx.statuses,{id:'bleed'+Math.random(),name:'Инцезио',turns:2,kind:'bleed',value:Math.round(rollAtk(ctx.player.physAtk)*0.05)}) },
-
-	{ name:'Лацерацио', family:'Bleed', luck:100, rarity:'uncommon', weight:25,
-    apply:ctx=>addStatus(ctx.statuses,{id:'bleed'+Math.random(),name:'Лацерацио',turns:4,kind:'bleed',value:Math.round(rollAtk(ctx.player.physAtk)*0.03)}) }
-
+  {id:'heal25FromDamage',name:'Восстановлено 25% ХП от нанесённого урона (В РБ 25% трикстеру и 2 рандомным )',desc:'[ ⚜️ ] Как только луч коснулся противника из него посыпались странные красные шарики похожие на зелье здоровья. Мы в игре?',apply:(s,logs)=>{const heal=Math.round(s.lastBurstDamage*0.25);const before=s.player.hp;s.player.hp=Math.min(s.player.maxHp,s.player.hp+heal);logs.push('[ ⚜️ ] Как только луч коснулся противника из него посыпались странные красные шарики похожие на зелье здоровья. Мы в игре?');logs.push('Восстановлено 25% ХП от нанесённого урона: +' + (s.player.hp-before) + ' ХП.');}},
+  {id:'red90',name:'Полученный урон снижен на 90%',desc:'[ ⚜️ ] Вы на долю секунды перестали существовать в этом мире. Какие-то люди в капюшоне спрашивали про кольцо...',apply:(s,logs)=>{s.player.oneHitReduction=0.90;logs.push('[ ⚜️ ] Вы на долю секунды перестали существовать в этом мире. Какие-то люди в капюшоне спрашивали про кольцо...');logs.push('Полученный урон снижен на 90%.');}},
+  {id:'dodgeSkills',name:'Уклонение от атаки и умений',desc:'[ ⚜️ ] Пространство дернулось, вы поменялись местами сами с собой (вроде). Враг промахнулся',apply:(s,logs)=>{s.player.dodgeNext=true;s.player.dodgeAnyNext=true;logs.push('[ ⚜️ ] Пространство дернулось, вы поменялись местами сами с собой (вроде). Враг промахнулся');logs.push('Уклонение от атаки и умений.');}},
+  {id:'dodgeAndHpMinus20',name:'Уклонение и -20% текущего ХП',desc:'[ ⚜️ ] Забыв про отдачу луча, вы пролетели половину поля боя словно посланец богов по срочному делу...',apply:(s,logs)=>{const dmg=Math.round(s.player.hp*0.20);s.player.hp=Math.max(0,s.player.hp-dmg);s.player.dodgeNext=true;s.player.dodgeAnyNext=true;logs.push('[ ⚜️ ] Забыв про отдачу луча, вы пролетели половину поля боя словно посланец богов по срочному делу...');logs.push('Уклонение и -20% текущего ХП: -' + dmg + ' ХП.');}},
+  {id:'doubleIncoming',name:'Полученный урон удвоен',desc:'[ ⚜️ ] Сквозь противный треск луча вы слышите отдалённый женский голос "Ты здесь, бог? Это я Маргарет"',apply:(s,logs)=>{s.player.doubleIncomingNext=true;logs.push('[ ⚜️ ] Сквозь противный треск луча вы слышите отдалённый женский голос "Ты здесь, бог? Это я Маргарет"');logs.push('Полученный урон удвоен.');}},
+  {id:'fullHeal',name:'100% хил (В РБ 100% разделяется между всеми игроками)',desc:'[ ⚜️ ] Почему луч радужного цвета???',apply:(s,logs)=>{const before=s.player.hp;s.player.hp=s.player.maxHp;logs.push('[ ⚜️ ] Почему луч радужного цвета???');logs.push('100% хил: +' + (s.player.hp-before) + ' ХП.');}},
+  {id:'return2Damage',name:'2% от нанесенного урона возвращается трикстеру',desc:'[ ⚜️ ] Возможно вы задумывались каков на вкус мистический луч?',apply:(s,logs)=>{const heal=Math.round(s.lastBurstDamage*0.02);const before=s.player.hp;s.player.hp=Math.min(s.player.maxHp,s.player.hp+heal);logs.push('[ ⚜️ ] Возможно вы задумывались каков на вкус мистический луч?');logs.push('2% от нанесенного урона возвращается трикстеру: +' + (s.player.hp-before) + ' ХП.');}}
 ];
 
-    function el(id) { return document.getElementById(id); }
-    function clamp(n, min, max) { return Math.max(min, Math.min(max, n)); }
-    function pct(cur, max) { return max <= 0 ? 0 : Math.round((cur / max) * 100); }
-    function bar(cur, max, fill = 10) { const n = Math.round((clamp(cur, 0, max) / Math.max(max, 1)) * fill); return '■'.repeat(n) + '□'.repeat(Math.max(0, fill - n)); }
-    function levelMul(lvl) { return 1 + lvl * 0.02; }
-    function rnd(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
-    function rollAtk(max) { return rnd(0, Math.max(0, Math.round(max))); }
-    function chooseWeighted(items, getWeight) {
-      const total = items.reduce((s, x) => s + Math.max(0, getWeight(x)), 0);
-      let roll = Math.random() * total;
-      for (const item of items) { roll -= Math.max(0, getWeight(item)); if (roll <= 0) return item; }
-      return items[items.length - 1];
+const state = {
+  round:1, battleStarted:false, battleOver:false, playerTurn:false,
+  logs:['Песочница готова. Жми «Начало боя».'],
+  sim:{runs:0,avgCastDamage:0,avgEnemyDamage:0,wins:0,losses:0,avgTurns:0,avgPoison:0,avgShadow:0},
+  player:{}, enemy:{}, cds:{shadow:0}, lastBurstDamage:0, snakePoisonActive:false
+};
+
+function el(id){ return document.getElementById(id); }
+function clamp(n,min,max){ return Math.max(min, Math.min(max, n)); }
+function pct(cur,max){ return max<=0?0:Math.round(cur/max*100); }
+function bar(cur,max,fill=10){ const n=Math.round((clamp(cur,0,max)/Math.max(max,1))*fill); return '■'.repeat(n)+'□'.repeat(Math.max(0,fill-n)); }
+function rnd(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+function escapeHtml(s){ return String(s).replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])); }
+function effectiveLuck(rawLuck,godLevel){ return Math.min(Math.round(rawLuck*(1+godLevel*0.01)),5000); }
+function luckCoef(effLuck){ return effLuck/5000; }
+function startAvoidChance(effLuck){ return 0.25 + (effLuck/5000)*0.25; }
+function godProcChance(effLuck){ return 0.10 + (effLuck/5000)*0.40; }
+
+function buildDerived(player){
+  const mul = 1 + player.unstableLevel*0.01;
+  player.physAtk = (player.strength + player.physWeapon)*mul + ((player.intellect + player.magWeapon)*mul*0.2);
+  player.magAtk = (player.intellect + player.magWeapon)*mul;
+  player.rawEffLuck = effectiveLuck(player.baseLuck, player.godLevel);
+  player.effLuck = Math.max(0, player.rawEffLuck - 100);
+  player.luckCoef = luckCoef(player.effLuck);
+  player.startAvoid = startAvoidChance(player.effLuck);
+  player.godProc = godProcChance(player.effLuck);
+  player.burstMax = player.magAtk * player.burstMultiplier;
+  player.burstAvg = player.burstMax/2;
+  player.snakePoisonPerTurn = Math.round(player.physAtk*0.20);
+  return player;
+}
+
+function readInputsToState(reset=false){
+  const prevP = state.player || {}, prevE = state.enemy || {};
+  const p = {
+    maxHp:+el('pMaxHp').value, maxMp:+el('pMaxMp').value, maxSt:+el('pMaxSt').value,
+    strength:+el('pStr').value, intellect:+el('pInt').value,
+    physWeapon:+el('pPhysWeapon').value, magWeapon:+el('pMagWeapon').value,
+    baseLuck:+el('pLuck').value, unstableLevel:+el('pUnstableLevel').value, godLevel:+el('pGodLevel').value,
+    critChance:+el('pCritChance').value, critMultiplier:+el('pCritMult').value, burstMultiplier:+el('pBurstMult').value,
+    hp: reset ? +el('pMaxHp').value : clamp(prevP.hp ?? +el('pMaxHp').value, 0, +el('pMaxHp').value),
+    mp: reset ? +el('pMaxMp').value : clamp(prevP.mp ?? +el('pMaxMp').value, 0, +el('pMaxMp').value),
+    st: reset ? +el('pMaxSt').value : clamp(prevP.st ?? +el('pMaxSt').value, 0, +el('pMaxSt').value),
+    shield: reset ? 0 : (prevP.shield || 0),
+    dodgeNext: reset ? false : !!prevP.dodgeNext,
+    dodgeFromGodStart: reset ? false : !!prevP.dodgeFromGodStart,
+    reflectNext: reset ? false : !!prevP.reflectNext,
+    oneHitReduction: reset ? 0 : (prevP.oneHitReduction || 0),
+    vampTurns: reset ? 0 : (prevP.vampTurns || 0),
+    vampPct: reset ? 0 : (prevP.vampPct || 0),
+    dodgeAnyNext: reset ? false : !!prevP.dodgeAnyNext,
+    doubleIncomingNext: reset ? false : !!prevP.doubleIncomingNext,
+    hpPotions: reset ? 3 : (prevP.hpPotions ?? 3),
+    mpPotions: reset ? 3 : (prevP.mpPotions ?? 3),
+    dodgeAnyNext: reset ? false : !!prevP.dodgeAnyNext,
+    doubleIncomingNext: reset ? false : !!prevP.doubleIncomingNext,
+    dodgeFromGodStart: reset ? false : !!prevP.dodgeFromGodStart,
+  };
+  state.player = buildDerived(p);
+
+  state.enemy = {
+    maxHp:+el('eMaxHp').value,
+    hp: reset ? +el('eMaxHp').value : clamp(prevE.hp ?? +el('eMaxHp').value, 0, +el('eMaxHp').value),
+    attack:+el('eAttack').value,
+    physDef:+el('ePhysDef').value,
+    magDef:+el('eMagDef').value,
+    shield: reset ? 0 : (prevE.shield || 0),
+    blind: reset ? 0 : (prevE.blind || 0),
+    stun: reset ? 0 : (prevE.stun || 0),
+    blockReady: reset ? false : !!prevE.blockReady,
+  };
+  if(reset) state.cds.shadow = 0;
+}
+
+function applyPureDamage(target, amount){
+  const dealt = Math.max(0, Math.round(amount));
+  target.hp = clamp(target.hp - dealt, 0, target.maxHp);
+  return {total: dealt};
+}
+
+function applyDamageWithShield(target, amount){
+  const absorbed = Math.min(target.shield || 0, amount);
+  target.shield = (target.shield || 0) - absorbed;
+  const rest = amount - absorbed;
+  target.hp = clamp(target.hp - rest, 0, target.maxHp);
+  return {absorbed, dealtToHp: rest, total: absorbed + rest};
+}
+
+function reduceByDefense(amount, defense){
+  return Math.max(0, Math.round(amount - defense));
+}
+
+function prepareEnemyBlock(logs){
+  state.enemy.blockReady = Math.random() < 0.30;
+  if(state.enemy.blockReady) logs.push('🛡️ Некродион приготовился к блоку.');
+}
+
+function applyEnemyMitigation(raw, type, logs){
+  let amount = Math.max(0, Math.round(raw));
+
+  if(state.enemy.blockReady){
+    logs.push('🛡️ Блок: Некродион полностью заблокировал весь входящий урон.');
+    state.enemy.blockReady = false;
+    return 0;
+  }
+
+  const def = type === 'physical' ? state.enemy.physDef : state.enemy.magDef;
+  const reduced = reduceByDefense(amount, def);
+
+  if(def > 0){
+    logs.push((type === 'physical' ? '🪖 Физ. защита' : '✨ Маг. защита') + ' поглотила ' + Math.max(0, amount - reduced) + ' урона.');
+  }
+
+  return reduced;
+}
+
+function maybeApplyPoison(logs){
+  if(!state.snakePoisonActive || state.enemy.hp<=0) return 0;
+
+  const dmg = Math.max(0, Math.round(state.player.snakePoisonPerTurn));
+  const res = applyPureDamage(state.enemy, dmg);
+
+  logs.push('🐍 Яд наносит чистый урон ' + res.total );
+  return res.total;
+}
+
+function maybeEnemyBoneGather(logs){
+  if(state.enemy.hp <= 0) return 0;
+  if(state.enemy.hp >= state.enemy.maxHp) return 0;
+  if(Math.random() >= 0.25) return 0;
+  const lost = state.enemy.maxHp - state.enemy.hp;
+  const heal = Math.round(lost * 0.20);
+  const before = state.enemy.hp;
+  state.enemy.hp = Math.min(state.enemy.maxHp, state.enemy.hp + heal);
+  const actual = state.enemy.hp - before;
+  if(actual > 0) logs.push('💀 Сбор костей: Некродион восстановил ' + actual + ' ХП.');
+  return actual;
+}
+
+function enemyAction(logs){
+  if(state.enemy.hp<=0) return {dealt:0};
+
+  if(state.enemy.stun>0){
+    state.enemy.stun--;
+    logs.push('🪨 Некродион пропускает ход из-за окаменения.');
+    return {dealt:0};
+  }
+
+  maybeEnemyBoneGather(logs);
+  if(state.enemy.hp<=0) return {dealt:0};
+
+  if(state.enemy.blind>0){
+    state.enemy.blind--;
+    if(Math.random() < 0.5){
+      logs.push('✨ Некродион промахнулся из-за ослепления.');
+      return {dealt:0};
     }
-	function formatSpell(glyphs) {
-    if (!glyphs.length) return '';
+  }
 
-	const words = glyphs.map(g => g.name.toLowerCase());
-
-	// первая буква первого слова — заглавная
-	words[0] = words[0].charAt(0).toUpperCase() + words[0].slice(1);
-
-	// если одно слово — просто возвращаем его
-	if (words.length === 1) {
-    return words[0];
-	}
-
-	// все слова кроме последнего с "..."
-	const body = words
-		.slice(0, -1)
-		.map(w => w + '...')
-		.join(' ');
-
-	// последнее слово без троеточия
-	const last = words[words.length - 1];
-
-	return body + ' ' + last;
-	}
-	function isGlyphAlreadyChosen(chosen, glyph) {
-	return chosen.some(c => c.name === glyph.name);
-	}
-    function rarityMultiplierForLuck(luck) { return (rarityMultipliers.find(x => luck >= x.min && luck <= x.max) || rarityMultipliers[0]).values; }
-    function typeChancesForLuck(luck) { return (typeChances.find(x => luck >= x.min && luck <= x.max) || typeChances[0]).values; }
-    function extraGlyphCountForLuck(luck) {
-      const row = countDistribution.find(x => luck >= x.min && luck <= x.max) || countDistribution[0];
-      return chooseWeighted(row.probs.map((p, i) => ({ i, p })), x => x.p).i;
+  if(state.player.dodgeNext){
+    state.player.dodgeNext = false;
+    if(state.player.dodgeFromGodStart){
+      state.player.dodgeFromGodStart = false;
+    } else {
+      logs.push('💨 Трикстер уклонился от атаки.');
     }
-    function addStatus(list, next) {
-      const found = list.find(s => s.id === next.id && s.kind === next.kind);
-      if (found) { found.turns = Math.max(found.turns, next.turns); found.value = (found.value || 0) + (next.value || 0); }
-      else list.push({ ...next });
-    }
-    function statusValue(list, kind) { return list.filter(s => s.kind === kind).reduce((s, x) => s + (x.value || 0), 0); }
-    function applyDamage(target, amount, type) {
-      const shieldKey = type === 'physical' ? 'physShield' : 'magShield';
-      const shield = target[shieldKey] || 0;
-      const absorbed = Math.min(shield, amount);
-      target[shieldKey] = shield - absorbed;
-      const rest = amount - absorbed;
-      target.hp = clamp(target.hp - rest, 0, target.maxHp);
-      return { absorbed, dealtToHp: rest };
-    }
-    function healPlayer(ctx, amount, source) {
-      const before = ctx.player.hp;
-      ctx.player.hp = clamp(ctx.player.hp + amount, 0, ctx.player.maxHp);
-      ctx.logs.push(`[ ⚜️ ] ${source}: +${ctx.player.hp - before} ХП.`);
-    }
-    function spendMp(ctx, amount, source) {
-      const spent = clamp(Math.round(amount), 0, ctx.player.mp);
-      ctx.player.mp -= spent;
-      if (spent > 0) ctx.logs.push(`[ ⚜️ ] ${source}: -${spent} МП.`);
-      return spent;
-    }
-    function spendSt(ctx, amount, source) {
-      const spent = clamp(Math.round(amount), 0, ctx.player.st);
-      ctx.player.st -= spent;
-      if (spent > 0) ctx.logs.push(`[ ⚜️ ] ${source}: -${spent} СТ.`);
-      return spent;
-    }
-    function readInputsToState(resetResources = false) {
-      state.player.maxHp = +el('pMaxHp').value;
-      state.player.maxMp = +el('pMaxMp').value;
-      state.player.maxSt = +el('pMaxSt').value;
-      state.player.strength = +el('pStr').value;
-      state.player.intellect = +el('pInt').value;
-      state.player.physWeapon = +el('pPhysWeapon').value;
-      state.player.magWeapon = +el('pMagWeapon').value;
-      state.player.luck = +el('pLuck').value;
-      state.player.skillLevel = +el('pSkillLevel').value;
-      state.player.critMultiplier = +el('pCrit').value;
+    return {dealt:0};
+  }
 
-      state.enemy.maxHp = +el('eMaxHp').value;
-      state.enemy.attack = +el('eAttack').value;
-      state.enemy.damageType = el('eDamageType').value;
-      state.enemy.physShield = +el('ePhysShield').value;
-      state.enemy.magShield = +el('eMagShield').value;
+  const isHumiliate = Math.random() < 0.20;
+  let raw = isHumiliate ? Math.round(state.enemy.attack * 3) : Math.round(state.enemy.attack);
 
-      if (resetResources) {
-        state.player.hp = state.player.maxHp;
-        state.player.mp = state.player.maxMp;
-        state.player.st = state.player.maxSt;
-        state.enemy.hp = state.enemy.maxHp;
+  if(state.player.doubleIncomingNext){
+    raw = Math.round(raw * 2);
+    logs.push('💥 Негативный эффект луча удвоил входящий урон.');
+    state.player.doubleIncomingNext = false;
+  }
+
+  if(isHumiliate) logs.push('👊 Унижение: Некродион хватает тебя за ногу и швыряет об землю.');
+  else logs.push('🗡 Некродион атакует.');
+
+  if(state.player.oneHitReduction > 0){
+    const cut = Math.round(raw * state.player.oneHitReduction);
+    raw = Math.max(0, raw - cut);
+    logs.push('🛡️ Защитный эффект Трикстера снизил входящий урон на ' + cut + '.');
+  }
+
+  if(state.player.reflectNext){
+    state.player.reflectNext = false;
+    const reflected = applyPureDamage(state.enemy, raw);
+    logs.push('↩️ Урон отражён обратно: ' + reflected.total + '.');
+    state.player.oneHitReduction = 0;
+    return {dealt:0};
+  }
+
+  const dealt = applyDamageWithShield(state.player, raw);
+  logs.push((isHumiliate ? '💥 ' : '') + 'Вы получаете ' + dealt.total + ' урона.');
+  state.player.oneHitReduction = 0;
+  return {dealt:dealt.total};
+}
+
+function snapshotState(){ return JSON.parse(JSON.stringify(state)); }
+function restoreState(snap){ Object.assign(state, snap); }
+
+function pickBurstEffect(){ return EFFECTS[rnd(0, EFFECTS.length - 1)]; }
+
+function doBurstAttack(logs){
+  const doubleCast = Math.random() < 0.05;
+  const rays = doubleCast ? 2 : 1;
+  let total = 0;
+  const hitValues = [];
+
+  for(let i=1;i<=rays;i++){
+    let dmg = rnd(0, Math.round(state.player.burstMax));
+    const isCrit = Math.random() < state.player.critChance;
+    if(isCrit) dmg = Math.round(dmg * state.player.critMultiplier);
+    const reduced = applyEnemyMitigation(dmg, 'magical', logs);
+    const res = applyDamageWithShield(state.enemy, reduced);
+    total += res.total;
+    hitValues.push(res.total);
+    if(state.enemy.hp <= 0) break;
+  }
+
+  state.lastBurstDamage = total;
+  const burstHasEffect = Math.random() < state.player.godProc;
+
+  if(hitValues.length >= 2){
+    logs.push('✨ Вы нанесли ' + (hitValues[0] || 0) + ' урона и ' + (hitValues[1] || 0) + ' урона');
+  } else {
+    logs.push('✨ Вы нанесли ' + total + ' урона');
+  }
+
+  if(burstHasEffect){
+    const effect = pickBurstEffect();
+    effect.apply(state, logs);
+  }
+
+  if(state.player.vampTurns > 0 && total > 0){
+    const heal = Math.round(total * state.player.vampPct);
+    const before = state.player.hp;
+    state.player.hp = Math.min(state.player.maxHp, state.player.hp + heal);
+    logs.push('🩸 Вампиризм восстановил ' + (state.player.hp - before) + ' ХП.');
+    state.player.vampTurns--;
+  }
+  return total;
+}
+
+function performRound(kind){
+  if(!state.battleStarted || state.battleOver || !state.playerTurn) return;
+  const logs = ['════ Раунд ' + state.round + ' ════'];
+  let playerDamage = 0, enemyDamage = 0, poisonDamage = 0;
+
+  if(kind === 'burst'){
+    const manaCost = rnd(10,50);
+    if(state.player.mp < manaCost){
+      logs.push('❌ Не хватает маны на Мистический всплеск.');
+      appendLogs(logs); render(); return;
+    }
+    state.player.mp -= manaCost;
+    logs.push('✨ [ ⚜️ ] Мистический всплеск');
+    logs.push('💙 Потрачено ' + manaCost + ' МП.');
+    prepareEnemyBlock(logs);
+    playerDamage = doBurstAttack(logs);
+  }
+
+  if(kind === 'shadow'){
+    if(state.cds.shadow > 0){
+      logs.push('❌ Теневой шаг на откате: ещё ' + state.cds.shadow + ' ход(а).');
+      appendLogs(logs); render(); return;
+    }
+    if(state.player.mp < 50){
+      logs.push('❌ Не хватает маны на Теневой шаг.');
+      appendLogs(logs); render(); return;
+    }
+    state.player.mp -= 50;
+    state.player.dodgeNext = true;
+    state.player.dodgeFromGodStart = true;
+    state.cds.shadow = 5;
+    logs.push('🌫 [ ⚜️ ] Теневой шаг');
+    logs.push('💙 Потрачено 50 МП.');
+    prepareEnemyBlock(logs);
+
+    let dmg = Math.round(state.player.physAtk * 1.2);
+    const isCrit = Math.random() < state.player.critChance;
+    if(isCrit) dmg = Math.round(dmg * state.player.critMultiplier);
+    const reduced = applyEnemyMitigation(dmg, 'physical', logs);
+    const res = applyDamageWithShield(state.enemy, reduced);
+    playerDamage = res.total;
+    logs.push('💨 Вы избежали урона телепортировавшись за спину врага. Нанесли ' + res.total + ' урона');
+  }
+
+  if(kind === 'hpPotion'){
+    if(state.player.hpPotions <= 0){
+      logs.push('❌ Зелья ХП закончились.');
+      appendLogs(logs); render(); return;
+    }
+    state.player.hpPotions--;
+    const heal = Math.round(state.player.maxHp * 0.35);
+    const before = state.player.hp;
+    state.player.hp = Math.min(state.player.maxHp, state.player.hp + heal);
+    logs.push('🧪 Выпито зелье ХП: +' + (state.player.hp - before) + ' ХП.');
+  }
+
+  if(kind === 'mpPotion'){
+    if(state.player.mpPotions <= 0){
+      logs.push('❌ Зелья МП закончились.');
+      appendLogs(logs); render(); return;
+    }
+    state.player.mpPotions--;
+    const heal = Math.round(state.player.maxMp * 0.40);
+    const before = state.player.mp;
+    state.player.mp = Math.min(state.player.maxMp, state.player.mp + heal);
+    logs.push('🧪 Выпито зелье МП: +' + (state.player.mp - before) + ' МП.');
+  }
+
+  if(kind === 'physAttack'){
+    logs.push('🗡 Физ. атака');
+    prepareEnemyBlock(logs);
+    let dmg = Math.round(state.player.physAtk + state.player.magAtk * 0.2);
+    const reduced = applyEnemyMitigation(dmg, 'physical', logs);
+    const res = applyDamageWithShield(state.enemy, reduced);
+    playerDamage = res.total;
+    logs.push('✨ Вы нанесли ' + res.total + ' урона');
+  }
+
+  if(kind === 'magAttack'){
+    logs.push('✨ Маг. атака');
+    const variants = [
+      '✨ Из рук вырываются столпы искр',
+      '✨ Бабочки явно не то чего вы ожидали',
+      '✨ На полянке выросла трава',
+      '✨ Враг научился свистеть пальцем',
+      '✨ Ваши руки зажглись синим пламенем'
+    ];
+    logs.push(variants[rnd(0, variants.length - 1)]);
+  }
+
+  if(state.enemy.hp > 0){
+    enemyDamage = enemyAction(logs).dealt;
+  }
+  if(state.enemy.hp > 0){
+    poisonDamage = maybeApplyPoison(logs);
+  }
+
+  if(state.cds.shadow > 0 && (kind === 'shadow' || kind === 'burst' || kind === 'hpPotion' || kind === 'mpPotion')) {
+    state.cds.shadow--;
+  }
+
+  logs.push('Итог раунда: твой урон ' + playerDamage + ' | урон врага ' + enemyDamage + ' | яд ' + poisonDamage);
+  state.round++;
+  state.playerTurn = !state.battleOver && state.player.hp > 0 && state.enemy.hp > 0;
+  appendLogs(logs);
+  checkBattleEnd();
+  render();
+}
+
+function startBattle(silent=false){
+  readInputsToState(true);
+  state.round = 1;
+  state.battleStarted = true;
+  state.battleOver = false;
+  state.logs = ['⚔️ Бой начался.'];
+  state.snakePoisonActive = Math.random() < 0.5;
+  state.logs.push(state.snakePoisonActive ? ('🐍 Змеиный оскал: (' + state.player.snakePoisonPerTurn + '/раунд).') : '🐍 Змеиный оскал не сработал.');
+  state.logs.push('🧲 Подавление рассудка: удача снижена на 100. Итоговая удача в бою — ' + state.player.effLuck + '.');
+
+  if(Math.random() < state.player.startAvoid){
+    state.player.dodgeNext = true;
+    const successTexts = [
+      '🎭 Бог обмана: враг спутал вас с деревом',
+      '🎭 Бог обмана: Враг кричал бранную речь вашей иллюзии',
+      '🎭 Бог обмана: Камень получился очень похожим на вас',
+      '🎭 Бог обмана: Вообще вы споткнулись, но получилось очень эффектно'
+    ];
+    state.logs.push(successTexts[rnd(0, successTexts.length - 1)]);
+  } else {
+    const failTexts = [
+      '🎭 Вам не удалось создать иллюзию',
+      '🎭 Вам не удалось обмануть врага'
+    ];
+    state.logs.push(failTexts[rnd(0, failTexts.length - 1)]);
+  }
+
+  if(Math.random() < 0.5){
+    state.playerTurn = false;
+    state.logs.push('☠︎︎ Первым ходит Некродион.');
+    const autoLogs = ['════ Стартовый ход врага ════'];
+    enemyAction(autoLogs);
+    if(state.enemy.hp > 0) maybeApplyPoison(autoLogs);
+    appendLogs(autoLogs);
+    checkBattleEnd();
+    if(!state.battleOver) state.playerTurn = true;
+  } else {
+    state.playerTurn = true;
+    state.logs.push('✨ Первый ход за Трикстером.');
+  }
+
+  if(!silent) render();
+}
+
+function checkBattleEnd(){
+  if(state.player.hp <= 0 && state.enemy.hp <= 0){
+    state.battleOver = true;
+    state.playerTurn = false;
+    appendLogs(['☠️ Ничья. Оба красиво развалились.']);
+  } else if(state.enemy.hp <= 0){
+    state.battleOver = true;
+    state.playerTurn = false;
+    appendLogs(['🏆 Некродион повержен.']);
+  } else if(state.player.hp <= 0){
+    state.battleOver = true;
+    state.playerTurn = false;
+    appendLogs(['💀 Трикстер пал. Некродион доволен, что уже подозрительно.']);
+  }
+}
+
+function appendLogs(arr){
+  state.logs = [...state.logs, ...arr].slice(-300);
+}
+
+function resetBattle(){
+  state.round = 1;
+  state.logs = ['Бой сброшен. Жми «Начало боя».'];
+  state.sim = {runs:0,avgCastDamage:0,avgEnemyDamage:0,wins:0,losses:0,avgTurns:0,avgPoison:0,avgShadow:0};
+  state.battleStarted = false;
+  state.battleOver = false;
+  state.playerTurn = false;
+  state.snakePoisonActive = false;
+  readInputsToState(true);
+  render();
+}
+
+function renderEffectPreview(){
+  el('effectsPreview').innerHTML = EFFECTS.map(e =>
+    '<div class="effect-card"><div class="name">' + escapeHtml(e.name) + '</div><div class="desc">' + escapeHtml(e.desc) + '</div></div>'
+  ).join('');
+}
+
+function simulateOneFight(limitRounds){
+  const snap = snapshotState();
+  startBattle(true);
+  let totalCast = 0, totalEnemy = 0, totalPoison = 0, totalShadow = 0, castUses = 0, roundsPlayed = 0;
+
+  while(!state.battleOver && roundsPlayed < limitRounds){
+    roundsPlayed++;
+    if(state.playerTurn){
+      const beforeEnemy = state.enemy.hp;
+      if(state.cds.shadow === 0 && state.player.mp >= 50 && roundsPlayed % 5 === 0){
+        performRound('shadow');
+        totalShadow += Math.max(0, beforeEnemy - state.enemy.hp);
       } else {
-        state.player.hp = clamp(state.player.hp, 0, state.player.maxHp);
-        state.player.mp = clamp(state.player.mp, 0, state.player.maxMp);
-        state.player.st = clamp(state.player.st, 0, state.player.maxSt);
-        state.enemy.hp = clamp(state.enemy.hp, 0, state.enemy.maxHp);
+        performRound('burst');
+        totalCast += Math.max(0, beforeEnemy - state.enemy.hp);
+        castUses++;
       }
-      recalcAttackRanges();
+      // poison approx derived from logs hard to track exactly; use state if active
+      if(state.snakePoisonActive) totalPoison += state.player.snakePoisonPerTurn;
+    } else {
+      // in this model playerTurn should not persist false except start
+      const beforePlayer = state.player.hp;
+      const logs = [];
+      enemyAction(logs);
+      totalEnemy += Math.max(0, beforePlayer - state.player.hp);
+      state.playerTurn = true;
+      checkBattleEnd();
     }
-function recalcAttackRanges() {
-      const p = state.player;
-      const mult = levelMul(p.skillLevel);
-      p.physAtk = (p.strength + p.physWeapon) * mult;
-      p.magAtk = (p.intellect + p.magWeapon) * mult;
-      el('calcPhys').textContent = `0–${Math.round(p.physAtk)}`;
-      el('calcMag').textContent = `0–${Math.round(p.magAtk)}`;
-    }
-    function attackGlyphs() { return glyphs.filter(g => g.family === 'Attack' && g.luck <= state.player.luck); }
-    function unlockedGlyphs() { return glyphs.filter(g => g.luck <= state.player.luck); }
-    function render() {
-	  readInputsToState(false);
-      el('turnBadge').textContent = `Ход ${state.turn}`;
-      el('glyphCountBadge').textContent = `Открыто глифов: ${unlockedGlyphs().length}`;
-      el('playerState').innerHTML = [
-        `┣ ❤ ХП: ${Math.round(state.player.hp)}/${Math.round(state.player.maxHp)}`,
-        `┣ <span class="bar">${bar(state.player.hp, state.player.maxHp)}</span> (${pct(state.player.hp, state.player.maxHp)}%)`,
-        `┣ 💙 МП: ${Math.round(state.player.mp)}/${Math.round(state.player.maxMp)} (${pct(state.player.mp, state.player.maxMp)}%)`,
-        `┣ 🤍 СТ: ${Math.round(state.player.st)}/${Math.round(state.player.maxSt)} (${pct(state.player.st, state.player.maxSt)}%)`,
-        `┣ 🛡 Щиты: Ф ${Math.round(state.player.physShield)} | М ${Math.round(state.player.magShield)}`,
-        `┗ 🗡 Ф. Атк: 0-${Math.round(state.player.physAtk)} | ✨ М. Атк: 0-${Math.round(state.player.magAtk)}`,
-      ].join('<br>');
-      el('enemyState').innerHTML = [
-        `┣ 🖤 ХП: ${Math.round(state.enemy.hp)}/${Math.round(state.enemy.maxHp)}`,
-        `┣ <span class="bar">${bar(state.enemy.hp, state.enemy.maxHp)}</span> (${pct(state.enemy.hp, state.enemy.maxHp)}%)`,
-        `┣ Урон: ${Math.round(state.enemy.attack)}`,
-        `┣ Тип урона: ${state.enemy.damageType}`,
-        `┗ Щиты: Ф ${Math.round(state.enemy.physShield)} | М ${Math.round(state.enemy.magShield)}`,
-      ].join('<br>');
-      const badges = state.statuses.length
-        ? state.statuses.map(s => `<div class="badge">${s.name}: ${s.turns}</div>`).join('')
-        : `<div class="badge">Эффектов нет</div>`;
-      el('statusBadges').innerHTML = badges;
-      el('btnHp').textContent = `❤️ ХП (${state.player.hpPotions})`;
-      el('btnMp').textContent = `💙 МП (${state.player.mpPotions})`;
-      el('btnSt').textContent = `🤍 СТ (${state.player.stPotions})`;
-      el('runs').textContent = state.sim.runs;
-      el('avgCast').textContent = Math.round(state.sim.avgCastDamage);
-      el('wins').textContent = state.sim.wins;
-      el('losses').textContent = state.sim.losses;
-      el('avgTurns').textContent = state.sim.avgTurns.toFixed(1);
-      const logEl = el('log');
-      logEl.innerHTML = state.logs.map(x => `<div class="entry">${escapeHtml(x)}</div>`).join('');
-      logEl.scrollTop = logEl.scrollHeight;
-    }
-    function escapeHtml(s) { return String(s).replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m])); }
-    function appendLogs(arr) { state.logs = [...state.logs, ...arr].slice(-200); }
-    function tailMark() { return chooseWeighted([{ v: '?', w: 1 }, { v: '...', w: 1 }, { v: '', w: 2 }], x => x.w).v; }
-    function processDots(logs) {
-      const next = [];
-      for (const s of state.statuses) {
-        if (s.kind === 'poison') {
-          const res = applyDamage(state.enemy, Math.round(s.value || 0), 'magical');
-          logs.push(`[ ⚜️ ] ${s.name}: 💥 ${res.absorbed + res.dealtToHp} маг. урона`);
-          logs.push(`⌛ Осталось: ${s.turns - 1} хода`);
-        }
-        if (s.kind === 'bleed') {
-          const res = applyDamage(state.enemy, Math.round(s.value || 0), 'physical');
-          logs.push(`[ ⚜️ ] ${s.name}: 💥 ${res.absorbed + res.dealtToHp} физ. урона`);
-          logs.push(`⌛ Осталось: ${s.turns - 1} хода`);
-        }
-        if (s.kind === 'regen') {
-          const before = state.player.hp;
-          state.player.hp = clamp(state.player.hp + Math.round(s.value || 0), 0, state.player.maxHp);
-          logs.push(`[ ⚜️ ] Регенерацио: +${state.player.hp - before} ХП.`);
-        }
-        const copy = { ...s, turns: s.turns - 1 };
-        if (copy.turns > 0) next.push(copy);
-      }
-      state.statuses = next;
-    }
-    function enemyTurn(logs) {
-      if (state.enemy.hp <= 0) return;
-      const atkDown = statusValue(state.statuses, 'enemyAtkDown');
-      const reflect = statusValue(state.statuses, 'reflect');
-      const nextHeal = state.statuses.some(s => s.kind === 'enemyHeals');
-      let dmg = Math.round(state.enemy.attack * (1 - atkDown));
-      let type = state.enemy.damageType;
-      if (type === 'mixed') type = Math.random() < 0.5 ? 'physical' : 'magical';
-      const invul = state.statuses.some(s => s.kind === 'invul');
-      if (nextHeal) {
-        const before = state.player.hp;
-        state.player.hp = clamp(state.player.hp + dmg, 0, state.player.maxHp);
-        logs.push(`🗡 Противник лечит вас на ${state.player.hp - before} вместо урона.`);
-        state.statuses = state.statuses.filter(s => s.kind !== 'enemyHeals');
-        return;
-      }
-      if (invul) dmg = 0;
-      const res = applyDamage(state.player, dmg, type);
-      logs.push(`🗡 Противник наносит вам ${res.absorbed + res.dealtToHp} ${type === 'physical' ? 'физического' : 'магического'} урона.`);
-      if (reflect > 0 && dmg > 0) {
-        const reflected = Math.round(dmg * reflect);
-        applyDamage(state.enemy, reflected, 'physical');
-        logs.push(`[ ⚜️ ] Отражение: ${reflected} урона возвращено врагу.`);
-      }
-    }
-    function renderStateText() {
-      return [
-        `✦ Трикс:`,
-        `┣ ❤ ХП: ${Math.round(state.player.hp)}/${Math.round(state.player.maxHp)}`,
-        `┣ ${bar(state.player.hp, state.player.maxHp)} (${pct(state.player.hp, state.player.maxHp)}%)`,
-        `┣ 💙 МП: ${Math.round(state.player.mp)}/${Math.round(state.player.maxMp)} (${pct(state.player.mp, state.player.maxMp)}%)`,
-        `┣ 🤍 СТ: ${Math.round(state.player.st)}/${Math.round(state.player.maxSt)} (${pct(state.player.st, state.player.maxSt)}%)`,
-        `┗ 🗡 Ф. Атк: 0-${Math.round(state.player.physAtk)} | ✨ М. Атк: 0-${Math.round(state.player.magAtk)}`,
-        '',
-        `✦ ☠︎︎Враг`,
-        `┣ 🖤 ХП: ${Math.round(state.enemy.hp)}/${Math.round(state.enemy.maxHp)}`,
-        `┗ ${bar(state.enemy.hp, state.enemy.maxHp)} (${pct(state.enemy.hp, state.enemy.maxHp)}%)`
-      ].join('\n');
-    }
-    function castHowWasIt() {
-      if (state.enemy.hp <= 0) { appendLogs(['Враг уже мёртв.']); render(); return; }
-      const logs = ['', '✨ Как там было?'];
-      const ctx = { player: state.player, enemy: state.enemy, statuses: state.statuses, logs, totalDamage: 0, totalHeal: 0, castMultiplier: 1, flatBonusDamage: 0, castHits: 1, pendingLifeSteal: 0 };
-      const baseManaCost = rnd(0, 50);
-      spendMp(ctx, baseManaCost, 'Как там было?');
-      const nextDamage = statusValue(state.statuses, 'nextDamage');
-      const nextExtra = statusValue(state.statuses, 'nextExtra');
-      if (nextDamage) ctx.castMultiplier *= 1 + nextDamage;
-      const atkGlyph = chooseWeighted(attackGlyphs(), g => g.weight * rarityMultiplierForLuck(state.player.luck)[g.rarity]);
-      const extra = clamp(extraGlyphCountForLuck(state.player.luck) + Math.round(nextExtra), 0, 5);
-      const chosen = [atkGlyph];
-      const chances = typeChancesForLuck(state.player.luck);
-      const unlocked = unlockedGlyphs();
-      for (let i = 0; i < extra; i++) {
-		const families = [
-		{ k: 'Attack', p: chances.Attack },
-		{ k: 'Debuff', p: chances.Debuff },
-		{ k: 'Heal', p: chances.Heal },
-		{ k: 'Vampirism', p: chances.Vampirism },
-		{ k: 'Buff', p: chances.Buff },
-		{ k: 'Guard', p: chances.Guard },
-		{ k: 'Chaos', p: chances.Chaos },
-		{ k: 'Poison', p: chances.Poison },
-		{ k: 'Bleed', p: chances.Bleed }
-	   ];
+  }
 
-		const fam = chooseWeighted(families, x => x.p).k;
+  const result = {
+    avgCastDamage: castUses ? totalCast / castUses : 0,
+    avgEnemyDamage: roundsPlayed ? totalEnemy / roundsPlayed : 0,
+    avgPoison: roundsPlayed ? totalPoison / roundsPlayed : 0,
+    avgShadow: roundsPlayed ? totalShadow / roundsPlayed : 0,
+    win: state.enemy.hp <= 0 && state.player.hp > 0,
+    loss: state.player.hp <= 0,
+    rounds: roundsPlayed
+  };
+  restoreState(snap);
+  return result;
+}
 
-		const familyGlyphs = unlocked.filter(g =>
-		g.family === fam &&
-		!isGlyphAlreadyChosen(chosen, g)
-		);
+function runSimulation(limitRounds, runs=100){
+  const snap = snapshotState();
+  let cast=0, enemy=0, poison=0, shadow=0, wins=0, losses=0, rounds=0;
+  for(let i=0;i<runs;i++){
+    const x = simulateOneFight(limitRounds);
+    cast += x.avgCastDamage;
+    enemy += x.avgEnemyDamage;
+    poison += x.avgPoison;
+    shadow += x.avgShadow;
+    rounds += x.rounds;
+    if(x.win) wins++;
+    if(x.loss) losses++;
+  }
+  restoreState(snap);
+  state.sim = {
+    runs,
+    avgCastDamage: cast / runs,
+    avgEnemyDamage: enemy / runs,
+    avgPoison: poison / runs,
+    avgShadow: shadow / runs,
+    wins, losses,
+    avgTurns: rounds / runs
+  };
+  render();
+}
 
-		if (!familyGlyphs.length) continue;
+function render(){
+  readInputsToState(false);
 
-		const glyph = chooseWeighted(
-		familyGlyphs,
-		g => g.weight * rarityMultiplierForLuck(state.player.luck)[g.rarity]
-		);
+  el('roundBadge').textContent = 'Раунд ' + state.round;
+  el('battleBadge').textContent = !state.battleStarted ? 'Бой не начат' : (state.battleOver ? 'Бой завершён' : (state.playerTurn ? 'Твой ход' : 'Ход врага'));
+  el('shadowCdBadge').textContent = state.cds.shadow > 0 ? ('Теневой шаг: ' + state.cds.shadow) : 'Теневой шаг: готов';
+  el('poisonBadge').textContent = state.snakePoisonActive ? ('Змеиный оскал: ' + state.player.snakePoisonPerTurn + '/раунд') : 'Змеиный оскал: нет';
 
-		chosen.push(glyph);
-		}
-      logs.push(`[ ⚜️ ] ${formatSpell(chosen)}${tailMark()}`);
-      chosen.forEach(g => g.apply(ctx));
-      let total = Math.round((ctx.totalDamage + ctx.flatBonusDamage) * ctx.castMultiplier);
-      const isCrit = Math.random() < clamp(state.player.luck / 200, 0, 1);
-      if (isCrit) total = Math.round(total * state.player.critMultiplier);
-      let dealt = 0;
-      for (let i = 0; i < ctx.castHits; i++) {
-        const hit = Math.round(total / ctx.castHits);
-        const type = Math.random() < 0.5 ? 'physical' : 'magical';
-        const res = applyDamage(state.enemy, hit, type);
-        dealt += res.absorbed + res.dealtToHp;
-        logs.push(`${isCrit ? '💥 Крит!' : '💥'} ${res.absorbed + res.dealtToHp} ${type === 'physical' ? 'физ.' : 'маг.'} урона (${i+1}/${ctx.castHits})`);
-      }
-      if (ctx.pendingLifeSteal > 0) {
-        const before = state.player.hp;
-        state.player.hp = clamp(state.player.hp + Math.round(dealt * ctx.pendingLifeSteal), 0, state.player.maxHp);
-        logs.push(`[ 🩸 ] Вампиризм: ${state.player.hp - before} ХП (${before} ➜ ${state.player.hp})`);
-      }
-      state.statuses = state.statuses.filter(s => s.kind !== 'nextDamage' && s.kind !== 'nextExtra');
-      enemyTurn(logs);
-      processDots(logs);
-      state.turn += 1;
-      appendLogs([...logs, '', renderStateText()]);
-      readInputsToState(false);
-    render();
-    }
-    function usePotion(kind) {
-      const logs = [''];
-      if (kind === 'hp') {
-        if (state.player.hpPotions <= 0) return appendLogs(['Зелья ХП закончились.']), render();
-        state.player.hpPotions--;
-        const before = state.player.hp;
-        state.player.hp = clamp(state.player.hp + Math.round(state.player.maxHp * 0.3), 0, state.player.maxHp);
-        logs.push(`❤️ Ваше здоровье увеличено ${before}/${state.player.maxHp} ➜ ${state.player.hp}/${state.player.maxHp}.`);
-        logs.push(`❤️ Осталось зелий ХП: ${state.player.hpPotions}`);
-      }
-      if (kind === 'mp') {
-        if (state.player.mpPotions <= 0) return appendLogs(['Зелья МП закончились.']), render();
-        state.player.mpPotions--;
-        const before = state.player.mp;
-        state.player.mp = clamp(state.player.mp + Math.round(state.player.maxMp * 0.3), 0, state.player.maxMp);
-        logs.push(`💙 МП восстановлено ${before}/${state.player.maxMp} ➜ ${state.player.mp}/${state.player.maxMp}.`);
-        logs.push(`💙 Осталось зелий МП: ${state.player.mpPotions}`);
-      }
-      if (kind === 'st') {
-        if (state.player.stPotions <= 0) return appendLogs(['Зелья СТ закончились.']), render();
-        state.player.stPotions--;
-        const before = state.player.st;
-        state.player.st = clamp(state.player.st + Math.round(state.player.maxSt * 0.3), 0, state.player.maxSt);
-        logs.push(`🤍 СТ восстановлена ${before}/${state.player.maxSt} ➜ ${state.player.st}/${state.player.maxSt}.`);
-        logs.push(`🤍 Осталось зелий СТ: ${state.player.stPotions}`);
-      }
-      enemyTurn(logs); processDots(logs); state.turn += 1; appendLogs([...logs, '', renderStateText()]); render();
-    }
-    function basicAttack(kind) {
-      const logs = ['', kind === 'physical' ? '🗡 Физ атака' : '✨ Маг атака'];
-      const maxHit = Math.round(kind === 'physical' ? state.player.physAtk : state.player.magAtk);
-      let hit = rnd(0, Math.max(0, maxHit));
-      const isCrit = Math.random() < clamp(state.player.luck / 200, 0, 1);
-      if (isCrit) hit = Math.round(hit * state.player.critMultiplier);
-      const res = applyDamage(state.enemy, hit, kind);
-      logs.push(`${isCrit ? '💥 Крит!' : '💥'} ${res.absorbed + res.dealtToHp} ${kind === 'physical' ? 'физ.' : 'маг.'} урона`);
-      enemyTurn(logs); processDots(logs); state.turn += 1; appendLogs([...logs, '', renderStateText()]); render();
-    }
-    function resetBattle() {
-      state.turn = 1; state.logs = ['Бой сброшен. Можно тестить заново.']; state.statuses = []; state.sim = { runs: 0, avgCastDamage: 0, avgEnemyDamage: 0, wins: 0, losses: 0, avgTurns: 0 };
-      state.player.hpPotions = 3; state.player.mpPotions = 2; state.player.stPotions = 2;
-      readInputsToState(true); render();
-    }
-    function simulateOneFight() {
-      const p = JSON.parse(JSON.stringify(state.player));
-      const e = JSON.parse(JSON.stringify(state.enemy));
-      let statuses = [];
-      let totalCast = 0, totalEnemy = 0, casts = 0, turns = 0;
-      while (p.hp > 0 && e.hp > 0 && turns < 200) {
-        turns++;
-        const ctx = { player: p, enemy: e, statuses, logs: [], totalDamage: 0, totalHeal: 0, castMultiplier: 1, flatBonusDamage: 0, castHits: 1, pendingLifeSteal: 0 };
-        spendMp(ctx, rnd(0, 50), 'Как там было?');
-        const nextDamage = statusValue(statuses, 'nextDamage');
-        const nextExtra = statusValue(statuses, 'nextExtra');
-        if (nextDamage) ctx.castMultiplier *= 1 + nextDamage;
-        const atkGlyph = chooseWeighted(attackGlyphs(), g => g.weight * rarityMultiplierForLuck(p.luck)[g.rarity]);
-        const extra = clamp(extraGlyphCountForLuck(p.luck) + Math.round(nextExtra), 0, 5);
-        const chosen = [atkGlyph];
-        const chances = typeChancesForLuck(p.luck);
-        const unlocked = glyphs.filter(g => g.luck <= p.luck);
-              for (let i = 0; i < extra; i++) {
-		const families = [
-		{ k: 'Attack', p: chances.Attack },
-		{ k: 'Debuff', p: chances.Debuff },
-		{ k: 'Heal', p: chances.Heal },
-		{ k: 'Vampirism', p: chances.Vampirism },
-		{ k: 'Buff', p: chances.Buff },
-		{ k: 'Guard', p: chances.Guard },
-		{ k: 'Chaos', p: chances.Chaos },
-		{ k: 'Poison', p: chances.Poison },
-		{ k: 'Bleed', p: chances.Bleed }
-	   ];
+  const canAct = state.battleStarted && !state.battleOver && state.playerTurn;
+  el('btnCast').disabled = !canAct;
+  el('btnShadow').disabled = !canAct;
+  el('btnHpPotion').disabled = !canAct;
+  el('btnMpPotion').disabled = !canAct;
+  if(el('btnPhysAttack')) el('btnPhysAttack').disabled = !canAct;
+  if(el('btnMagAttack')) el('btnMagAttack').disabled = !canAct;
 
-		const fam = chooseWeighted(families, x => x.p).k;
+  el('calcPhys').textContent = Math.round(state.player.physAtk);
+  el('calcMag').textContent = Math.round(state.player.magAtk);
+  el('calcLuck').textContent = state.player.effLuck;
+  el('calcBurstAvg').textContent = Math.round(state.player.burstAvg);
+  el('luckCoefBadge').textContent = state.player.luckCoef.toFixed(3);
+  el('startAvoidBadge').textContent = Math.round(state.player.startAvoid * 100) + '%';
+  el('godProcBadge').textContent = Math.round(state.player.godProc * 100) + '%';
 
-		const familyGlyphs = unlocked.filter(g =>
-		g.family === fam &&
-		!isGlyphAlreadyChosen(chosen, g)
-		);
+  el('playerState').innerHTML = [
+    '┣ ❤ ХП: ' + Math.round(state.player.hp) + '/' + Math.round(state.player.maxHp),
+    '┣ <span class="bar">' + bar(state.player.hp, state.player.maxHp) + '</span> (' + pct(state.player.hp, state.player.maxHp) + '%)',
+    '┣ 💙 МП: ' + Math.round(state.player.mp) + '/' + Math.round(state.player.maxMp) + ' (' + pct(state.player.mp, state.player.maxMp) + '%)',
+    '┣ 🤍 СТ: ' + Math.round(state.player.st) + '/' + Math.round(state.player.maxSt) + ' (' + pct(state.player.st, state.player.maxSt) + '%)',
+    '┣ 🛡 Щит: ' + Math.round(state.player.shield || 0),
+    '┣ 🍀 Удача в бою: ' + state.player.effLuck,
+    '┣ 🧪 Зелья ХП/МП: ' + state.player.hpPotions + '/' + state.player.mpPotions,
+    '┗ 🗡 Ф. Атк: 0-' + Math.round(state.player.physAtk) + ' | ✨ М. Атк: 0-' + Math.round(state.player.magAtk)
+  ].join('<br>');
 
-		if (!familyGlyphs.length) continue;
+  const enemyEffects = [];
+  if(state.enemy.stun > 0) enemyEffects.push('stun');
+  if(state.enemy.blind > 0) enemyEffects.push('blind');
+  if(state.enemy.blockReady) enemyEffects.push('block');
+  el('enemyState').innerHTML = [
+    '┣ 🖤 ХП: ' + Math.round(state.enemy.hp) + '/' + Math.round(state.enemy.maxHp),
+    '┣ <span class="bar">' + bar(state.enemy.hp, state.enemy.maxHp) + '</span> (' + pct(state.enemy.hp, state.enemy.maxHp) + '%)',
+    '┣ 🗡 Ф. Атк: 0-' + Math.round(state.enemy.attack),
+    '┣ 🛡 Ф. Защ: ' + Math.round(state.enemy.physDef) + ' | 🌟 М. Защ: ' + Math.round(state.enemy.magDef),
+    '┣ Щит: ' + Math.round(state.enemy.shield || 0),
+    '┗ Эффекты: ' + (enemyEffects.length ? enemyEffects.join(', ') : 'нет')
+  ].join('<br>');
 
-		const glyph = chooseWeighted(
-		familyGlyphs,
-		g => g.weight * rarityMultiplierForLuck(state.player.luck)[g.rarity]
-		);
+  const badges = [];
+  if(state.player.dodgeNext) badges.push('<div class="badge">Уклонение</div>');
+  if(state.player.reflectNext) badges.push('<div class="badge">Отражение</div>');
+  if(state.player.oneHitReduction > 0) badges.push('<div class="badge">Редук ' + Math.round(state.player.oneHitReduction*100) + '%</div>');
+  if(state.player.vampTurns > 0) badges.push('<div class="badge">Вамп ' + Math.round(state.player.vampPct*100) + '% / ' + state.player.vampTurns + '</div>');
+  if(state.player.doubleIncomingNext) badges.push('<div class="badge">След. урон x2</div>');
+  if(state.enemy.blockReady) badges.push('<div class="badge">Враг готов к блоку</div>');
+  if(state.enemy.stun > 0) badges.push('<div class="badge">Враг: stun</div>');
+  if(state.enemy.blind > 0) badges.push('<div class="badge">Враг: blind</div>');
+  el('statusBadges').innerHTML = badges.length ? badges.join('') : '<div class="badge">Эффектов нет</div>';
 
-		chosen.push(glyph);
-		}
-        chosen.forEach(g => g.apply(ctx));
-        let total = Math.round((ctx.totalDamage + ctx.flatBonusDamage) * ctx.castMultiplier);
-        if (Math.random() < clamp(p.luck / 200, 0, 1)) total = Math.round(total * p.critMultiplier);
-        let dealt = 0;
-        for (let i = 0; i < ctx.castHits; i++) {
-          const res = applyDamage(e, Math.round(total / ctx.castHits), Math.random() < 0.5 ? 'physical' : 'magical');
-          dealt += res.absorbed + res.dealtToHp;
-        }
-        if (ctx.pendingLifeSteal > 0) p.hp = clamp(p.hp + Math.round(dealt * ctx.pendingLifeSteal), 0, p.maxHp);
-        totalCast += dealt; casts++;
-        statuses = statuses.filter(s => s.kind !== 'nextDamage' && s.kind !== 'nextExtra');
-        const atkDown = statusValue(statuses, 'enemyAtkDown');
-        const reflect = statusValue(statuses, 'reflect');
-        const nextHeal = statuses.some(s => s.kind === 'enemyHeals');
-        let dmg = Math.round(e.attack * (1 - atkDown));
-        let type = e.damageType === 'mixed' ? (Math.random() < 0.5 ? 'physical' : 'magical') : e.damageType;
-        if (nextHeal) p.hp = clamp(p.hp + dmg, 0, p.maxHp);
-        else {
-          const before = p.hp;
-          applyDamage(p, dmg, type);
-          totalEnemy += before - p.hp;
-          if (reflect > 0 && dmg > 0) applyDamage(e, Math.round(dmg * reflect), 'physical');
-        }
-        const nextStatuses = [];
-        for (const s of statuses) {
-          if (s.kind === 'poison') applyDamage(e, Math.round(s.value || 0), 'magical');
-          if (s.kind === 'bleed') applyDamage(e, Math.round(s.value || 0), 'physical');
-          if (s.kind === 'regen') p.hp = clamp(p.hp + Math.round(s.value || 0), 0, p.maxHp);
-          const c = { ...s, turns: s.turns - 1 };
-          if (c.turns > 0 && c.kind !== 'enemyHeals') nextStatuses.push(c);
-        }
-        statuses = nextStatuses;
-      }
-      return { avgCastDamage: casts ? totalCast / casts : 0, avgEnemyDamage: turns ? totalEnemy / turns : 0, win: e.hp <= 0 && p.hp > 0, loss: p.hp <= 0, turns };
-    }
-    function runSimulation(runs) {
-      let cast = 0, enemy = 0, wins = 0, losses = 0, turns = 0;
-      for (let i = 0; i < runs; i++) {
-        const x = simulateOneFight();
-        cast += x.avgCastDamage; enemy += x.avgEnemyDamage; turns += x.turns; if (x.win) wins++; if (x.loss) losses++;
-      }
-      state.sim = { runs, avgCastDamage: cast / runs, avgEnemyDamage: enemy / runs, wins, losses, avgTurns: turns / runs };
-      render();
-    }
+  const logEl = el('log');
+  logEl.innerHTML = state.logs.map(x => '<div class="entry">' + escapeHtml(x) + '</div>').join('');
+  logEl.scrollTop = logEl.scrollHeight;
 
-    ['pMaxHp','pMaxMp','pMaxSt','pStr','pInt','pPhysWeapon','pMagWeapon','pLuck','pSkillLevel','pCrit','eMaxHp','eAttack','ePhysShield','eMagShield','eDamageType'].forEach(id => el(id).addEventListener('input', () => { readInputsToState(false); render(); }));
-    el('btnCast').onclick = castHowWasIt;
-    el('btnPhys').onclick = () => basicAttack('physical');
-    el('btnMag').onclick = () => basicAttack('magical');
-    el('btnHp').onclick = () => usePotion('hp');
-    el('btnMp').onclick = () => usePotion('mp');
-    el('btnSt').onclick = () => usePotion('st');
-    el('btnReset').onclick = resetBattle;
-    el('btnSim4').onclick = () => runSimulation(4);
-    el('btnSim8').onclick = () => runSimulation(8);
-    el('btnSim10').onclick = () => runSimulation(10);
-    render();
-  </script>
+  el('runs').textContent = state.sim.runs;
+  el('avgCast').textContent = Math.round(state.sim.avgCastDamage);
+  el('wins').textContent = state.sim.wins;
+  el('losses').textContent = state.sim.losses;
+  el('avgTurns').textContent = state.sim.avgTurns.toFixed(1);
+  el('avgEnemy').textContent = Math.round(state.sim.avgEnemyDamage);
+  el('avgPoison').textContent = Math.round(state.sim.avgPoison);
+  el('avgShadow').textContent = Math.round(state.sim.avgShadow);
+
+  renderEffectPreview();
+}
+
+[
+  'pMaxHp','pMaxMp','pMaxSt','pStr','pInt','pPhysWeapon','pMagWeapon','pLuck','pUnstableLevel',
+  'pGodLevel','pCritChance','pCritMult','pBurstMult','eMaxHp','eAttack','ePhysDef','eMagDef'
+].forEach(id => el(id).addEventListener('input', ()=>{readInputsToState(false); render();}));
+
+el('btnStart').addEventListener('click', (e)=>{ e.preventDefault(); e.stopPropagation(); startBattle(false); });
+el('btnReset').addEventListener('click', (e)=>{ e.preventDefault(); resetBattle(); });
+el('btnCast').addEventListener('click', (e)=>{ e.preventDefault(); performRound('burst'); });
+el('btnShadow').addEventListener('click', (e)=>{ e.preventDefault(); performRound('shadow'); });
+el('btnHpPotion').addEventListener('click', (e)=>{ e.preventDefault(); performRound('hpPotion'); });
+el('btnMpPotion').addEventListener('click', (e)=>{ e.preventDefault(); performRound('mpPotion'); });
+el('btnPhysAttack').addEventListener('click', (e)=>{ e.preventDefault(); performRound('physAttack'); });
+el('btnMagAttack').addEventListener('click', (e)=>{ e.preventDefault(); performRound('magAttack'); });
+el('btnSim4').addEventListener('click', (e)=>{ e.preventDefault(); runSimulation(4); });
+el('btnSim8').addEventListener('click', (e)=>{ e.preventDefault(); runSimulation(8); });
+el('btnSim20').addEventListener('click', (e)=>{ e.preventDefault(); runSimulation(20); });
+
+resetBattle();
+</script>
 </body>
 </html>
