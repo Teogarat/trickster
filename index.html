@@ -93,7 +93,7 @@
       </div>
       <div class="skill">
         <div class="name">[ ⚜️ ] Бог обмана <span style="color:var(--muted);font-size:12px">(пассивка, 1 раз за бой)</span></div>
-        <div class="desc">В начале боя с шансом 35% (чем выше удача — тем выше) создаёт точную копию с 50% ХП. При каждом входящем уроне — 50% шанс, что урон получит клон (а не трикстер). Кап шанса создания: 80%. Прокачка: +1.5% к удаче за уровень.</div>
+        <div class="desc">В начале боя с шансом 35% (чем выше удача — тем выше) создаёт точную копию с 50% ХП. При каждом входящем уроне — 50% шанс, что урон получит клон (а не трикстер). Кап шанса создания: 50%. Прокачка: +1.5% к удаче за уровень.</div>
       </div>
       <div class="skill">
         <div class="name">[ ⚜️ ] Змеиный оскал <span style="color:var(--muted);font-size:12px">(пассивка)</span></div>
@@ -376,7 +376,7 @@ function pickEffect(){
 // Луч: 0 – magAtk × burstMult (тип 50/50 маг/физ)
 // Яд: 10% от (физ + маг атака)
 // Удача в бою = baseLuck × (1 + godLevel×0.015) − 100
-// Шанс клона: 35% + (effLuck/5000)×45%, кап 80%
+// Шанс клона: 35% + (effLuck/5000)×45%, кап 50%
 // Шанс эффекта: 25% + (effLuck/5000)×25%, кап 50%
 
 function buildDerived(p){
@@ -384,7 +384,7 @@ function buildDerived(p){
   p.physAtk = (p.strength + p.physWeapon) * mul;
   p.magAtk  = (p.intellect + p.magWeapon) * mul;
   p.effLuck = Math.max(0, Math.round(p.baseLuck * (1 + p.godLevel*0.015) - 100));
-  p.cloneChance = Math.min(0.80, 0.35 + (p.effLuck/5000)*0.45);
+  p.cloneChance = Math.min(0.50, 0.25 + (p.effLuck/5000)*0.25);
   p.godProc     = Math.min(0.50, 0.25 + (p.effLuck/5000)*0.25);
   p.burstMax    = p.magAtk * p.burstMultiplier;   // макс. урон луча (как маг ИЛИ как физ)
   p.poisonPerTurn = round((p.physAtk + p.magAtk) * 0.10);
