@@ -213,6 +213,7 @@ const ENEMY_SKILLS = [
   { id:'field2',       name:'🧲 Поле 2',                defaultOn:false, desc:'Снижает вашу удачу на 100 (дополнительно к Подавлению).' },
   { id:'defense1',     name:'🛡️ Защита',                defaultOn:false, desc:'30% шанс снизить входящий урон на 70%.' },
   { id:'critCrit1',    name:'💥 Критический крит 1',    defaultOn:false, desc:'20% шанс снять 70% ХП игрока.' },
+  { id:'bestFencer',   name:'🤺 Лучшая фехтовальщица', defaultOn:false, desc:'Высокий шанс парировать атаку. (90% шанс) — тратит ресурсы атаки, урон не проходит.' },
 ];
 
 function getActiveSkills(){
@@ -768,6 +769,14 @@ function doBurstAttack(){
 
   const effLines=[];
 
+  // 🤺 Лучшая фехтовальщица (90% шанс)
+  if(sk.bestFencer && Math.random()<0.90){
+    const costPar=rnd(10,50); state.player.mp=Math.max(0,state.player.mp-costPar);
+    effLines.push('🤺 Лучшая фехтовальщица! Луч парирован с мастерством — МП −'+costPar);
+    const poisonLine=tryPoison();
+    return {line:'[ ⚜️ ] Мистический луч ('+typeLabel+') → 🤺 ПАРИРОВАНО (фехтовальщица)', effLines, poisonLine, dmg:0};
+  }
+
   // 🏃 Парирование
   if(sk.parry && Math.random()<0.25){
     state.cds.shadow=Math.max(state.cds.shadow, 3); // луч не на откате, но условно тратим ману
@@ -835,6 +844,14 @@ function doPhysAttack(){
   if(isCrit) rawDmg=round(rawDmg*state.player.critMultiplier);
   const effLines=[];
 
+  // 🤺 Лучшая фехтовальщица (90% шанс)
+  if(sk.bestFencer && Math.random()<0.90){
+    effLines.push('🤺 Лучшая фехтовальщица! Физ. атака парирована — стамина обнулена');
+    state.player.st=0;
+    const poisonLine=tryPoison();
+    return {line:'🗡 Физ. атака → 🤺 ПАРИРОВАНО (фехтовальщица)', effLines, poisonLine, dmg:0};
+  }
+
   // Парирование
   if(sk.parry && Math.random()<0.25){
     effLines.push('🏃 Парирование! Физ. атака парирована — стамина обнулена');
@@ -880,6 +897,14 @@ function doMagAttack(){
   const isCrit=Math.random()<state.player.critChance;
   if(isCrit) rawDmg=round(rawDmg*state.player.critMultiplier);
   const effLines=[];
+
+  // 🤺 Лучшая фехтовальщица (90% шанс)
+  if(sk.bestFencer && Math.random()<0.90){
+    effLines.push('🤺 Лучшая фехтовальщица! Маг. атака парирована — мана потрачена впустую');
+    state.player.mp=Math.max(0,state.player.mp-30);
+    const poisonLine=tryPoison();
+    return {line:'✨ Маг. атака → 🤺 ПАРИРОВАНО (фехтовальщица)', effLines, poisonLine, dmg:0};
+  }
 
   // Парирование
   if(sk.parry && Math.random()<0.25){
