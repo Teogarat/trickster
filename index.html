@@ -123,7 +123,7 @@
     </div>
 
     <div class="card">
-      <h2 class="title">✦ ☠︎︎ Примарх Гигачад</h2>
+      <h2 class="title">✦ ☠︎︎ Примарх Некродион</h2>
       <div class="grid2">
         <div><label>ХП</label><input id="eMaxHp" type="number" value="30000"></div>
         <div><label>Мин. физ. атака</label><input id="eAttackMin" type="number" value="100"></div>
@@ -132,7 +132,7 @@
         <div><label>Маг. защита</label><input id="eMagDef" type="number" value="5000"></div>
       </div>
       <div style="margin-top:14px">
-        <div class="subtitle">Умения Гигачада (галочки = активны)</div>
+        <div class="subtitle">Умения Некродиона (галочки = активны)</div>
         <div id="enemySkillsList" style="display:grid;gap:6px;margin-top:6px"></div>
       </div>
     </div>
@@ -159,7 +159,7 @@
       </div>
       <div class="fight-grid">
         <div class="panel"><div class="subtitle">✦ Трикстер</div><div id="playerState" class="mono state-line"></div></div>
-        <div class="panel"><div class="subtitle">✦ ☠︎︎ Примарх Гигачад</div><div id="enemyState" class="mono state-line"></div></div>
+        <div class="panel"><div class="subtitle">✦ ☠︎︎ Примарх Некродион</div><div id="enemyState" class="mono state-line"></div></div>
       </div>
       <div class="badges" id="statusBadges" style="margin-top:10px"></div>
 
@@ -193,7 +193,7 @@
 </div>
 
 <script>
-// ===== УМЕНИЯ ГигачадА =====
+// ===== УМЕНИЯ НЕКРОДИОНА =====
 const ENEMY_SKILLS = [
   { id:'boneGather',   name:'💀 Сбор костей',          defaultOn:true,  desc:'Если ранен, с шансом 25% на своём ходу восстанавливает 20% от потерянного ХП.' },
   { id:'block',        name:'🛡️ Блок',                  defaultOn:true,  desc:'30% шанс полностью заблокировать входящую атаку.' },
@@ -446,7 +446,7 @@ const state = {
   sim:{runs:0,avgCastDamage:0,avgEnemyDamage:0,wins:0,losses:0,avgTurns:0,avgPoison:0,avgPhys:0},
   player:{}, enemy:{}, cds:{shadow:0},
   lastBurstDamage:0, poisonActive:false, poisonPerTurn:0,
-  cloneActive:false, cloneHp:0, cloneMaxHp:0
+  clones:[] // массив объектов {hp, maxHp}, макс 2
 };
 
 function readInputsToState(reset=false){
@@ -486,8 +486,7 @@ function readInputsToState(reset=false){
   };
   if(reset){
     state.cds.shadow=0; state.poisonActive=false; state.poisonPerTurn=0;
-    state.cloneActive=false; state.cloneHp=0; state.cloneMaxHp=0;
-    state.lastBurstDamage=0;
+    state.clones=[]; state.lastBurstDamage=0;
   }
 }
 
@@ -510,7 +509,7 @@ function mitigate(raw, type, logs, ignoreDefense=false){
   // Здесь mitigate применяется к атакам игрока по врагу
 
   if(state.enemy.blockReady){
-    logs.push('🛡️ Блок: Гигачад полностью заблокировал урон.');
+    logs.push('🛡️ Блок: Некродион полностью заблокировал урон.');
     state.enemy.blockReady=false; return 0;
   }
 
@@ -545,11 +544,18 @@ function mitigate(raw, type, logs, ignoreDefense=false){
 
 // Попадание по игроку: 50% шанс клон принимает урон (если жив)
 function dmgToPlayerOrClone(raw, logs){
-  if(state.cloneActive && state.cloneHp>0 && Math.random()<0.5){
-    const d=Math.min(state.cloneHp, Math.max(0,round(raw)));
-    state.cloneHp-=d;
-    logs.push('🪬 Клон принял '+d+' урона. ХП клона: '+state.cloneHp+'/'+state.cloneMaxHp+'.');
-    if(state.cloneHp<=0){ state.cloneActive=false; logs.push('🪬 Клон уничтожен.'); }
+  const alive = state.clones.filter(c=>c.hp>0);
+  if(alive.length>0 && Math.random()<0.5){
+    // случайный живой клон принимает урон
+    const clone = alive[Math.floor(Math.random()*alive.length)];
+    const d = Math.min(clone.hp, Math.max(0, round(raw)));
+    clone.hp -= d;
+    const idx = state.clones.indexOf(clone)+1;
+    logs.push('🪬 Клон '+idx+' принял '+d+' урона. ХП: '+clone.hp+'/'+clone.maxHp+'.');
+    if(clone.hp<=0){
+      state.clones = state.clones.filter(c=>c!==clone);
+      logs.push('🪬 Клон '+idx+' уничтожен.');
+    }
     return 0;
   }
   const r=dmgWithShield(state.player, raw);
@@ -602,7 +608,7 @@ function enemyTurn(){
   // Стан — пропускает ход ПОЛНОСТЬЮ (до сбора костей)
   if(state.enemy.stun>0){
     state.enemy.stun--;
-    lines.push('🪨 Гигачад: пропускает ход (оглушение)');
+    lines.push('🪨 Некродион: пропускает ход (оглушение)');
     return {lines,dealt:0};
   }
 
@@ -610,7 +616,7 @@ function enemyTurn(){
   if(state.enemy.blind>0){
     state.enemy.blind--;
     if(Math.random()<0.5){
-      lines.push('👁 Гигачад: промахнулся (ослепление)');
+      lines.push('👁 Некродион: промахнулся (ослепление)');
       return {lines,dealt:0};
     }
   }
@@ -621,7 +627,7 @@ function enemyTurn(){
     const b=state.enemy.hp;
     state.enemy.hp=Math.min(state.enemy.maxHp,state.enemy.hp+h);
     state.enemy.healCooldown=3;
-    lines.push('🎶 Лечение: Гигачад восстановил '+(state.enemy.hp-b)+' ХП');
+    lines.push('🎶 Лечение: Некродион восстановил '+(state.enemy.hp-b)+' ХП');
     // После лечения атакует обычно
   } else if((state.enemy.healCooldown||0)>0){ state.enemy.healCooldown--; }
 
@@ -633,7 +639,7 @@ function enemyTurn(){
   // ⚜ Громовое копьё — ПРИОРИТЕТНЕЕ, с шансом 20%
   if(sk.thunderSpear && Math.random()<0.20){
     const spearDmg=round((state.enemy.attackMax)*3);
-    lines.push('⚜ Громовое копьё! Гигачад бросает заряженное копьё (×3 от макс. атаки)');
+    lines.push('⚜ Громовое копьё! Некродион бросает заряженное копьё (×3 от макс. атаки)');
     // Игнорирует уклонение и отражение
     const p=state.player;
     let raw=spearDmg;
@@ -670,9 +676,9 @@ function enemyTurn(){
       const raw=round(rnd(state.enemy.attackMin,state.enemy.attackMax)*(isHumiliate?3:1));
       pureDmg(state.enemy, raw);
       lines.push('💨 Бесчестный обмен: атака прошла сквозь иллюзию'+(isHumiliate?' (×3 Унижение)':''));
-      lines.push('  ↩️ '+raw+' урона вернулось обратно Гигачаду');
+      lines.push('  ↩️ '+raw+' урона вернулось обратно Некродиону');
     } else {
-      lines.push('💨 Гигачад: атака прошла сквозь иллюзию — промах');
+      lines.push('💨 Некродион: атака прошла сквозь иллюзию — промах');
     }
     return {lines,dealt:0};
   }
@@ -684,7 +690,7 @@ function enemyTurn(){
     const r=dmgWithShield(state.player, raw);
     const heal=round(r.total);
     state.enemy.hp=Math.min(state.enemy.maxHp, state.enemy.hp+heal);
-    lines.push('🩸 Поглощение плоти! ('+Math.round(pct*100)+'% от макс. атаки) → '+r.total+' урона → Гигачад восстановил '+heal+' ХП');
+    lines.push('🩸 Поглощение плоти! ('+Math.round(pct*100)+'% от макс. атаки) → '+r.total+' урона → Некродион восстановил '+heal+' ХП');
     return {lines, dealt:r.total};
   }
 
@@ -692,7 +698,7 @@ function enemyTurn(){
   if(sk.whirlwind && Math.random()<0.20){
     const raw=rnd(50,350);
     const r=dmgWithShield(state.player, raw);
-    lines.push('💨 Волчок! Гигачад закручивается и налетает → '+r.total+' урона');
+    lines.push('💨 Волчок! Некродион закручивается и налетает → '+r.total+' урона');
     return {lines,dealt:r.total};
   }
 
@@ -718,7 +724,7 @@ function enemyTurn(){
   let raw=round(rnd(state.enemy.attackMin, state.enemy.attackMax)*(isHumiliate?3:1));
   if(state.player.doubleIncomingNext){ raw=round(raw*2); state.player.doubleIncomingNext=false; }
 
-  let attackLabel = isHumiliate ? '👊 Гигачад: Унижение (×3)' : '🗡 Гигачад: атакует';
+  let attackLabel = isHumiliate ? '👊 Некродион: Унижение (×3)' : '🗡 Некродион: атакует';
 
   // Снижение урона
   if(state.player.oneHitReduction>0){
@@ -732,17 +738,24 @@ function enemyTurn(){
   if(state.player.reflectNext){
     state.player.reflectNext=false;
     pureDmg(state.enemy,raw);
-    lines.push(attackLabel+' → ↩️ отражено ('+raw+') обратно Гигачаду');
+    lines.push(attackLabel+' → ↩️ отражено ('+raw+') обратно Некродиону');
     return {lines,dealt:0};
   }
 
   // Клон (25% шанс принять урон)
-  if(state.cloneActive&&state.cloneHp>0&&Math.random()<0.25){
-    const d=Math.min(state.cloneHp,Math.max(0,round(raw)));
-    state.cloneHp-=d;
-    let cloneLine=attackLabel+' → 🪬 клон принял '+d+' урона';
-    if(state.cloneHp<=0){ state.cloneActive=false; cloneLine+=' (клон уничтожен)'; }
-    else cloneLine+=' (клон: '+state.cloneHp+'/'+state.cloneMaxHp+')';
+  const aliveClones = state.clones.filter(c=>c.hp>0);
+  if(aliveClones.length>0 && Math.random()<0.25){
+    const clone = aliveClones[Math.floor(Math.random()*aliveClones.length)];
+    const d = Math.min(clone.hp, Math.max(0, round(raw)));
+    clone.hp -= d;
+    const idx = state.clones.indexOf(clone)+1;
+    let cloneLine = attackLabel+' → 🪬 Клон '+idx+' принял '+d+' урона';
+    if(clone.hp<=0){
+      state.clones = state.clones.filter(c=>c!==clone);
+      cloneLine += ' (клон уничтожен)';
+    } else {
+      cloneLine += ' (клон '+idx+': '+clone.hp+'/'+clone.maxHp+')';
+    }
     lines.push(cloneLine);
     return {lines,dealt:0};
   }
@@ -781,7 +794,7 @@ function doBurstAttack(){
   if(sk.parry && Math.random()<0.25){
     state.cds.shadow=Math.max(state.cds.shadow, 3); // луч не на откате, но условно тратим ману
     const costPar=rnd(10,50); state.player.mp=Math.max(0,state.player.mp-costPar);
-    effLines.push('🏃 Парирование! Гигачад парировал луч — МП −'+costPar+' (откат)');
+    effLines.push('🏃 Парирование! Некродион парировал луч — МП −'+costPar+' (откат)');
     const poisonLine=tryPoison();
     return {line:'[ ⚜️ ] Мистический луч ('+typeLabel+') → 🏃 ПАРИРОВАНО', effLines, poisonLine, dmg:0};
   }
@@ -1032,20 +1045,20 @@ function performRound(kind){
   const php=round(state.player.hp), pmhp=round(state.player.maxHp);
   const ehp=round(state.enemy.hp),  emhp=round(state.enemy.maxHp);
   parts.push('');
-  parts.push('✦ Трикстер: '+php+'/'+pmhp+' ХП  |  МП: '+round(state.player.mp)+'/'+round(state.player.maxMp)+(state.cloneActive?' | 🪬 Клон: '+state.cloneHp+'/'+state.cloneMaxHp:''));
-  parts.push('✦ Гигачад: '+ehp+'/'+emhp+' ХП');
+  const aliveStr = state.clones.filter(c=>c.hp>0).map((c,i)=>'🪬 Клон '+(i+1)+': '+c.hp+'/'+c.maxHp).join('  ');
+  parts.push('✦ Трикстер: '+php+'/'+pmhp+' ХП  |  МП: '+round(state.player.mp)+'/'+round(state.player.maxMp)+(aliveStr?' | '+aliveStr:''));
+  parts.push('✦ Некродион: '+ehp+'/'+emhp+' ХП');
 
   if(state.cds.shadow>0) state.cds.shadow--;
   state.round++;
 
   // Бог обмана: 5% шанс создать ещё одну копию в бою (не более 2)
   if(state.battleStarted && !state.battleOver){
-    const cloneCount=(state.cloneActive?1:0);
-    if(cloneCount<2 && Math.random()<0.05){
-      state.cloneActive=true;
-      state.cloneMaxHp=round(state.player.maxHp*0.50);
-      state.cloneHp=Math.max(state.cloneHp||0, state.cloneMaxHp); // новый полный клон
-      parts.push('🎭 Бог обмана: в бою создана новая копия! (5% шанс)');
+    const aliveCount = state.clones.filter(c=>c.hp>0).length;
+    if(aliveCount < 2 && Math.random()<0.05){
+      const maxHp = round(state.player.maxHp*0.50);
+      state.clones.push({hp:maxHp, maxHp});
+      parts.push('🎭 Бог обмана: в бою создана новая копия! (5% шанс) 🪬 Клон '+state.clones.length+': '+maxHp+'/'+maxHp+' ХП');
     }
   }
 
@@ -1063,11 +1076,10 @@ function startBattle(silent=false){
 
   // Бог обмана: клон (шанс 25% + удача, кап 50%)
   if(Math.random()<state.player.cloneChance){
-    state.cloneActive=true;
-    state.cloneMaxHp=round(state.player.maxHp*0.50);
-    state.cloneHp=state.cloneMaxHp;
+    const maxHp = round(state.player.maxHp*0.50);
+    state.clones.push({hp:maxHp, maxHp});
     state.logs.push('🎭 Бог обмана! Создана копия (шанс принять урон: 25%).');
-    state.logs.push('🪬 Клон: '+state.cloneHp+'/'+state.cloneMaxHp+' ХП.');
+    state.logs.push('🪬 Клон 1: '+maxHp+'/'+maxHp+' ХП.');
   } else {
     state.logs.push('🎭 Бог обмана: клон не создан (шанс был '+Math.round(state.player.cloneChance*100)+'%).');
   }
@@ -1099,7 +1111,7 @@ function startBattle(silent=false){
     if(pd>0) parts.push('🐍 Яд: −'+pd+' ХП врагу');
     parts.push('');
     parts.push('✦ Трикстер: '+round(state.player.hp)+'/'+round(state.player.maxHp)+' ХП');
-    parts.push('✦ Гигачад: '+round(state.enemy.hp)+'/'+round(state.enemy.maxHp)+' ХП');
+    parts.push('✦ Некродион: '+round(state.enemy.hp)+'/'+round(state.enemy.maxHp)+' ХП');
     appendLogs([parts.join('\n')]); checkEnd();
     if(!state.battleOver) state.playerTurn=true;
   } else {
@@ -1110,7 +1122,7 @@ function startBattle(silent=false){
 
 function checkEnd(){
   if(state.player.hp<=0&&state.enemy.hp<=0){ end('☠️ Ничья.'); }
-  else if(state.enemy.hp<=0){ end('🏆 Гигачад повержен!'); }
+  else if(state.enemy.hp<=0){ end('🏆 Некродион повержен!'); }
   else if(state.player.hp<=0){ end('💀 Трикстер пал.'); }
 }
 function end(msg){ state.battleOver=true; state.playerTurn=false; appendLogs([msg]); }
@@ -1120,7 +1132,7 @@ function appendLogs(arr){ if(state.isSimulating) return; state.logs=[...state.lo
 function resetBattle(){
   state.round=1; state.battleStarted=false; state.battleOver=false; state.playerTurn=false;
   state.poisonActive=false; state.poisonPerTurn=0;
-  state.cloneActive=false; state.cloneHp=0; state.cloneMaxHp=0; state.lastBurstDamage=0;
+  state.clones=[]; state.lastBurstDamage=0;
   state.logs=['Бой сброшен. Жми «Начало боя».'];
   state.sim={runs:0,avgCastDamage:0,avgEnemyDamage:0,wins:0,losses:0,avgTurns:0,avgPoison:0,avgPhys:0};
   readInputsToState(true); render();
@@ -1136,7 +1148,9 @@ function render(){
   el('battleBadge').textContent=!state.battleStarted?'Бой не начат':(state.battleOver?'Бой завершён':(state.playerTurn?'Твой ход':'Ход врага'));
   el('shadowCdBadge').textContent=state.cds.shadow>0?'Обмен: '+state.cds.shadow:'Бесчестный обмен: готов';
   el('poisonBadge').textContent=state.poisonActive?('🐍 Яд: '+state.poisonPerTurn+'/раунд'):'🐍 Яд: нет';
-  el('cloneBadge').textContent=state.cloneActive?('🪬 Клон: '+state.cloneHp+'/'+state.cloneMaxHp):'🪬 Клон: нет';
+  const aliveClones = state.clones.filter(c=>c.hp>0);
+  el('cloneBadge').textContent = aliveClones.length===0 ? '🪬 Клон: нет' :
+    aliveClones.map((c,i)=>'🪬 Клон '+(i+1)+': '+c.hp+'/'+c.maxHp).join('  ');
 
   ['btnCast','btnShadow','btnHpPotion','btnMpPotion','btnPhysAttack','btnMagAttack'].forEach(id=>{ if(el(id)) el(id).disabled=!canAct; });
 
@@ -1154,7 +1168,7 @@ function render(){
     '┣ 💙 МП: '+Math.round(p.mp)+'/'+Math.round(p.maxMp)+' ('+pct(p.mp,p.maxMp)+'%)',
     '┣ 🤍 СТ: '+Math.round(p.st)+'/'+Math.round(p.maxSt)+' ('+pct(p.st,p.maxSt)+'%)',
     '┣ 🛡 Щит: '+Math.round(p.shield||0),
-    '┣ 🪬 Клон: '+(state.cloneActive?state.cloneHp+'/'+state.cloneMaxHp:'нет'),
+    '┣ 🪬 Клон: '+(aliveClones.length===0?'нет':aliveClones.map((c,i)=>'['+(i+1)+'] '+c.hp+'/'+c.maxHp).join(' | ')),
     '┣ 🍀 Удача: '+p.effLuck,
     '┣ 🧪 Зелья ХП/МП: '+p.hpPotions+'/'+p.mpPotions,
     '┣ 🗡 Физ.атк: '+Math.round(p.physAtk),
