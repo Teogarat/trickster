@@ -782,10 +782,23 @@ function doBurstAttack(){
 
   const effLines=[];
 
+  // Коварность — бросок делается ВСЕГДА (даже при парировании, блоке, уклонении)
+  let kovalGodProcFired=false;
+  function tryGodProc(){
+    if(kovalGodProcFired) return;
+    kovalGodProcFired=true;
+    if(Math.random()<state.player.godProc){
+      const eff=pickEffect();
+      effLines.push('  🎭 '+eff.desc+' (луч не попал, но трюк сработал!)');
+      eff.apply(state,effLines);
+    }
+  }
+
   // 🤺 Лучшая фехтовальщица (90% шанс)
   if(sk.bestFencer && Math.random()<0.90){
     const costPar=rnd(10,50); state.player.mp=Math.max(0,state.player.mp-costPar);
     effLines.push('🤺 Лучшая фехтовальщица! Луч парирован с мастерством — МП −'+costPar);
+    tryGodProc();
     const poisonLine=tryPoison();
     return {line:'[ ⚜️ ] Мистический луч ('+typeLabel+') → 🤺 ПАРИРОВАНО (фехтовальщица)', effLines, poisonLine, dmg:0};
   }
@@ -795,6 +808,7 @@ function doBurstAttack(){
     state.cds.shadow=Math.max(state.cds.shadow, 3); // луч не на откате, но условно тратим ману
     const costPar=rnd(10,50); state.player.mp=Math.max(0,state.player.mp-costPar);
     effLines.push('🏃 Парирование! Некродион парировал луч — МП −'+costPar+' (откат)');
+    tryGodProc();
     const poisonLine=tryPoison();
     return {line:'[ ⚜️ ] Мистический луч ('+typeLabel+') → 🏃 ПАРИРОВАНО', effLines, poisonLine, dmg:0};
   }
@@ -823,20 +837,18 @@ function doBurstAttack(){
 
   let line='[ ⚜️ ] Мистический луч ('+typeLabel+')';
   if(isCrit) line+=' 💫 КРИТ';
-  if(blocked){ line+=' → 🛡 заблокирован (0 урона)'; }
-  else {
+  if(blocked){
+    line+=' → 🛡 заблокирован (0 урона)';
+    tryGodProc(); // блок — луч не попал, но эффект может сработать
+  } else {
     line+=' → нанесено '+res.total+' урона';
     if(ignoreArmor) line+=' (игнор брони)';
     else if(defAbsorbed>0) line+=' (броня поглотила '+defAbsorbed+')';
     if(res.absorbed>0) line+=' (щит врага поглотил '+res.absorbed+')';
   }
 
-  // Эффект Коварности
-  if(Math.random()<state.player.godProc){
-    const eff=pickEffect();
-    effLines.push('  🎭 '+eff.desc);
-    eff.apply(state,effLines);
-  }
+  // Эффект Коварности (если ещё не сработал выше)
+  tryGodProc();
 
   // Вампиризм
   if(state.player.vampTurns>0&&res.total>0){
