@@ -197,7 +197,7 @@ const ENEMY_SKILLS = [
   { id:'whirlwind',    name:'💨 Волчок',                defaultOn:false, desc:'Закручивается и движется на вас. Урон 50–350.' },
   { id:'residual2',    name:'🗡️ Остаточное мастерство v2', defaultOn:false, desc:'Наносит 50–250% от макс. урона.' },
   { id:'reflexes',     name:'🛡️ Запредельные рефлексы', defaultOn:false, desc:'С шансом снижает входящий урон на 70%.' },
-  { id:'healing',      name:'🎶 Лечение',               defaultOn:false, desc:'Восстанавливает 1/3 от максимального ХП.' },
+  { id:'healing',      name:'🎶 Лечение',               defaultOn:false, desc:'При ХП ниже 50% с шансом 40% восстанавливает 1/3 от максимального ХП. Откат: 3 хода.' },
   { id:'spiderSpores', name:'🕸 Паучьи споры',          defaultOn:false, desc:'Паучки оглушают и атакуют дважды (комбо-удар).' },
   { id:'dirtyStart',   name:'🧨 Нечестное начало',      defaultOn:false, desc:'Обнуляет вашу стамину или ману в начале боя.' },
   { id:'field2',       name:'🧲 Поле 2',                defaultOn:false, desc:'Снижает вашу удачу на 100 (дополнительно к Подавлению).' },
@@ -292,7 +292,7 @@ const EFFECTS = [
   {id:'strongShield', type:'Сильный щит', desc:'[ ⚜️ ] Возник мощный барьер.', name:'Щит 50% от макс. ХП на 2 хода',
    apply:(s,l)=>{const n=round(s.player.maxHp*0.50);addTimedShield(s.player,n,2,l);}},
   {id:'fullHeal', type:'Полный хил', desc:'[ ⚜️ ] Радужный луч.', name:'Полное восстановление ХП (РБ: 100% макс. ХП делится на всех членов пати)',
-   apply:(s,l)=>{const b=s.player.hp;s.player.hp=s.player.maxHp;l.push('  💚 Полное восстановление: +'+(s.player.hp-b)+' ХП');}},
+   apply:(s,l)=>healPlayer(s,s.player.maxHp,l,'  💚 Полное восстановление: +')},
   {id:'regen', type:'Мелкий хил', desc:'[ ⚜️ ] Слабое восстановление.', name:'Регенерация 5% от макс. ХП на 2 хода (РБ случайного игрока)',
    apply:(s,l)=>{s.player.regenTurns=2;s.player.regenPct=0.05;l.push('  💚 Регенерация 5% от макс. ХП на 2 хода');}},
 
@@ -320,32 +320,52 @@ function bar(cur,max,fill=10){ const n=Math.round((clamp(cur,0,max)/Math.max(max
 function rnd(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
 function escHtml(s){ return String(s).replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])); }
 
+function healingStatus(actual,requested,before,after,maxHp){
+  if(actual<=0){
+    return '0 ХП (здоровье уже полное: '+before+'/'+maxHp+')';
+  }
+  const capped=actual<requested?' — избыток лечения отсечён':'';
+  return actual+' ХП ('+before+' → '+after+'/'+maxHp+')'+capped;
+}
 function healPlayer(s,amount,logs,prefix='💚 Хил: +'){
-  const before=s.player.hp;
-  s.player.hp=Math.min(s.player.maxHp,s.player.hp+Math.max(0,round(amount)));
-  logs.push(prefix+(s.player.hp-before)+' ХП');
+  const before=round(s.player.hp);
+  const requested=Math.max(0,round(amount));
+  s.player.hp=Math.min(s.player.maxHp,s.player.hp+requested);
+  const after=round(s.player.hp);
+  const actual=Math.max(0,after-before);
+  logs.push(prefix+healingStatus(actual,requested,before,after,round(s.player.maxHp)));
+  return actual;
+}
+function healEnemy(s,amount,logs,prefix='💀 Враг восстановил '){
+  const before=round(s.enemy.hp);
+  const requested=Math.max(0,round(amount));
+  s.enemy.hp=Math.min(s.enemy.maxHp,s.enemy.hp+requested);
+  const after=round(s.enemy.hp);
+  const actual=Math.max(0,after-before);
+  logs.push(prefix+healingStatus(actual,requested,before,after,round(s.enemy.maxHp)));
+  return actual;
 }
 function healFromBurstDamage(s,logs,healPct){
   const dealt=round(s.lastBurstDamage);
   if(dealt<=0){
     logs.push('  💚 Лечение от урона не сработало: Мистический луч не нанёс урон');
-    return;
+    return 0;
   }
   const calculated=round(dealt*healPct);
-  const before=s.player.hp;
-  s.player.hp=Math.min(s.player.maxHp,s.player.hp+calculated);
-  const actual=s.player.hp-before;
-  logs.push('  💚 Лечение от урона: '+dealt+' × '+formatPercent(healPct)+' = '+calculated+' ХП; восстановлено '+actual+' ХП');
+  const before=round(s.player.hp);
+  const actual=healPlayer(s,calculated,[], '');
+  const after=round(s.player.hp);
+  logs.push('  💚 Лечение от урона: '+dealt+' × '+formatPercent(healPct)+' = '+calculated+' ХП; '+healingStatus(actual,calculated,before,after,round(s.player.maxHp)));
+  return actual;
 }
 function formatPercent(value){
   return (value*100).toLocaleString('ru-RU',{maximumFractionDigits:2})+'%';
 }
 function riskyHeal(s,logs,playerPct,enemyPct){
-  if(Math.random()<0.90){ healPlayer(s,round(s.player.maxHp*playerPct),logs,'  💚 Исцеление +'); }
-  else {
-    const before=s.enemy.hp;
-    s.enemy.hp=Math.min(s.enemy.maxHp,s.enemy.hp+round(s.enemy.maxHp*enemyPct));
-    logs.push('  💀 Враг восстановил '+(s.enemy.hp-before)+' ХП');
+  if(Math.random()<0.90){
+    healPlayer(s,round(s.player.maxHp*playerPct),logs,'  💚 Исцеление: +');
+  } else {
+    healEnemy(s,round(s.enemy.maxHp*enemyPct),logs,'  💀 Ошибка лечения — враг восстановил ');
   }
 }
 function addShield(target,amount,logs,label='🛡 Щит'){
@@ -610,9 +630,12 @@ function applyPoison(){
 function enemyBoneGather(){
   const sk=getActiveSkills();
   if(!sk.boneGather||state.enemy.hp<=0||state.enemy.hp>=state.enemy.maxHp||Math.random()>=0.25) return null;
-  const before=state.enemy.hp;
-  state.enemy.hp=Math.min(state.enemy.maxHp,state.enemy.hp+round((state.enemy.maxHp-state.enemy.hp)*0.20));
-  return '💀 Сбор костей: +'+(state.enemy.hp-before)+' ХП';
+  const before=round(state.enemy.hp);
+  const requested=round((state.enemy.maxHp-state.enemy.hp)*0.20);
+  state.enemy.hp=Math.min(state.enemy.maxHp,state.enemy.hp+requested);
+  const after=round(state.enemy.hp);
+  const actual=Math.max(0,after-before);
+  return '💀 Сбор костей: '+healingStatus(actual,requested,before,after,round(state.enemy.maxHp));
 }
 
 function listStealableSkills(){
@@ -653,10 +676,10 @@ function enemyTurn(){
   }
 
   if(sk.healing&&state.enemy.hp<state.enemy.maxHp*0.5&&(state.enemy.healCooldown||0)<=0&&Math.random()<0.40){
-    const before=state.enemy.hp;
-    state.enemy.hp=Math.min(state.enemy.maxHp,state.enemy.hp+round(state.enemy.maxHp/3));
+    healEnemy(state,round(state.enemy.maxHp/3),lines,'🎶 Лечение: Древоебатель восстановил ');
     state.enemy.healCooldown=3;
-    lines.push('🎶 Лечение: Древоебатель восстановил '+(state.enemy.hp-before)+' ХП');
+    lines.push('  🎶 Лечение использовало действие — атаки в этот ход не будет');
+    return {lines,dealt};
   } else if((state.enemy.healCooldown||0)>0) state.enemy.healCooldown--;
 
   const bone=enemyBoneGather();if(bone)lines.push(bone);
@@ -674,8 +697,8 @@ function enemyTurn(){
   if(sk.fleshAbsorb&&Math.random()<0.18){
     const raw=state.enemy.attackMax*(1+Math.random()*2);
     const d=resolveIncomingDamage(raw,lines,'🩸 Поглощение плоти','skill');
-    const before=state.enemy.hp;state.enemy.hp=Math.min(state.enemy.maxHp,state.enemy.hp+d);
-    if(d>0)lines.push('  🩸 Древоебатель восстановил '+(state.enemy.hp-before)+' ХП');
+    if(d>0)healEnemy(state,d,lines,'  🩸 Поглощение плоти восстановило ');
+    else lines.push('  🩸 Поглощение плоти не восстановило ХП: урон не нанесён');
     dealt+=d;return {lines,dealt};
   }
   if(sk.whirlwind&&Math.random()<0.20){dealt+=resolveIncomingDamage(rnd(50,350),lines,'💨 Волчок','skill');return {lines,dealt};}
@@ -696,8 +719,9 @@ function consumeAttackBuffs(){
 }
 function applyVampirism(damage,lines){
   if(state.player.vampTurns>0&&damage>0){
-    healPlayer(state,round(damage*state.player.vampPct),lines,'  🩸 Вампиризм +');
-    state.player.vampTurns--;
+    healPlayer(state,round(damage*state.player.vampPct),lines,'  🩸 Вампиризм: +');
+  } else if(state.player.vampTurns>0&&damage<=0){
+    lines.push('  🩸 Вампиризм не восстановил ХП: урон не нанесён');
   }
 }
 
@@ -830,10 +854,12 @@ function updateTimedEffects(parts,usedShadow,usedStolen){
   state.dishonestExchangeActive=false;
 
   if(state.player.regenTurns>0){
-    const before=state.player.hp;
-    state.player.hp=Math.min(state.player.maxHp,state.player.hp+round(state.player.maxHp*state.player.regenPct));
+    healPlayer(state,round(state.player.maxHp*state.player.regenPct),parts,'💚 Регенерация: +');
     state.player.regenTurns--;
-    parts.push('💚 Регенерация: +'+(state.player.hp-before)+' ХП');
+  }
+  if(state.player.vampTurns>0){
+    state.player.vampTurns--;
+    if(state.player.vampTurns===0)parts.push('🩸 Действие вампиризма закончилось');
   }
   if(state.player.timedShieldTurns>0){
     state.player.timedShieldTurns--;
@@ -855,10 +881,18 @@ function updateTimedEffects(parts,usedShadow,usedStolen){
   }
 }
 
+function hpDeltaLine(name,before,after,maxHp){
+  const delta=round(after)-round(before);
+  const sign=delta>0?'+':'';
+  return name+': '+round(before)+' → '+round(after)+'/'+round(maxHp)+' ('+sign+delta+' за раунд)';
+}
+
 // ===== ОСНОВНОЙ ЦИКЛ =====
 function performRound(kind){
   if(!state.battleStarted||state.battleOver||!state.playerTurn)return null;
   let playerDmg=0,enemyDmg=0,poisonDmg=0;
+  const playerHpAtRoundStart=round(state.player.hp);
+  const enemyHpAtRoundStart=round(state.enemy.hp);
   const parts=['════ Раунд '+state.round+' ════'];
   let usedShadow=false,usedStolen=false;
 
@@ -890,6 +924,9 @@ function performRound(kind){
   if(state.player.hp>0&&state.enemy.hp>0)tryStealSkill(parts);
 
   parts.push('');
+  parts.push('📊 Итог изменения ХП:');
+  parts.push('  '+hpDeltaLine('Трикстер',playerHpAtRoundStart,state.player.hp,state.player.maxHp));
+  parts.push('  '+hpDeltaLine('Древоебатель',enemyHpAtRoundStart,state.enemy.hp,state.enemy.maxHp));
   parts.push('✦ Трикстер: '+round(state.player.hp)+'/'+round(state.player.maxHp)+' ХП | МП: '+round(state.player.mp)+'/'+round(state.player.maxMp)+(state.illusionActive?' | 🪬 Иллюзия активна':''));
   parts.push('✦ Древоебатель: '+round(state.enemy.hp)+'/'+round(state.enemy.maxHp)+' ХП');
 
