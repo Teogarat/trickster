@@ -636,10 +636,20 @@ function enemyTurn(){
   const sk=getActiveSkills();
   if(state.enemy.hp<=0) return {lines,dealt};
 
-  if(state.enemy.stun>0){state.enemy.stun--;lines.push('🪨 Древоебатель пропускает ход (оглушение)');return {lines,dealt};}
-  if(state.enemy.blind>0){
-    state.enemy.blind--;
-    if(Math.random()<0.50){lines.push('👁 Древоебатель промахнулся (ослепление)');return {lines,dealt};}
+  // Оглушение и ослепление полностью запрещают действия врага на этот ход:
+  // нельзя использовать активные умения, лечение, Сбор костей или атаковать с руки.
+  if(state.enemy.stun>0 || state.enemy.blind>0){
+    const disabledBy=[];
+    if(state.enemy.stun>0){
+      state.enemy.stun--;
+      disabledBy.push('оглушение');
+    }
+    if(state.enemy.blind>0){
+      state.enemy.blind--;
+      disabledBy.push('ослепление');
+    }
+    lines.push((disabledBy.includes('оглушение')?'🪨':'👁')+' Древоебатель полностью пропускает ход ('+disabledBy.join(' + ')+'): умения и атака с руки недоступны');
+    return {lines,dealt};
   }
 
   if(sk.healing&&state.enemy.hp<state.enemy.maxHp*0.5&&(state.enemy.healCooldown||0)<=0&&Math.random()<0.40){
