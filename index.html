@@ -38,7 +38,7 @@
     .b-shadow{background:linear-gradient(90deg,#0f766e,#14b8a6);min-width:180px}
     .b-phys{background:linear-gradient(90deg,#b45309,#d97706)}
     .b-mag{background:linear-gradient(90deg,#0e7490,#0891b2)}
-    .b-potion{background:linear-gradient(90deg,#1d4ed8,#2563eb)}
+    .b-stolen{background:linear-gradient(90deg,#7e22ce,#a855f7);min-width:220px}
     .b-sim{background:#374151;border:1px solid var(--line)}
     .mini{background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:12px}
     .mini .k{color:var(--muted);font-size:13px}
@@ -80,13 +80,12 @@
         <div><label>Ур. Бога обмана</label><input id="pGodLevel" type="number" value="16"></div>
         <div><label>Крит шанс (0–1)</label><input id="pCritChance" type="number" step="0.01" value="1"></div>
         <div><label>Крит множитель</label><input id="pCritMult" type="number" step="0.1" value="6"></div>
-        <div><label>Множитель луча (макс x3)</label><input id="pBurstMult" type="number" step="0.1" value="3"></div>
       </div>
       <div class="grid4" style="margin-top:12px">
         <div class="mini"><div class="k">Физ. атака</div><div class="v" id="calcPhys">0</div></div>
         <div class="mini"><div class="k">Маг. атака</div><div class="v" id="calcMag">0</div></div>
         <div class="mini"><div class="k">Удача в бою</div><div class="v" id="calcLuck">0</div></div>
-        <div class="mini"><div class="k">Макс. луч</div><div class="v" id="calcBurstAvg">0</div></div>
+        <div class="mini"><div class="k">Макс. луч без крита</div><div class="v" id="calcBurstAvg">0</div></div>
       </div>
     </div>
 
@@ -94,36 +93,32 @@
       <h2 class="title">Умения Трикстера</h2>
       <div class="skill">
         <div class="name">[ ⚜️ ] Нестабильный потенциал <span style="color:var(--muted);font-size:12px">(пассивка)</span></div>
-        <div class="desc">Минимальный урон мистического луча равен 0, максимальный увеличен. Прокачка: +1% к физ. и маг. урону за уровень.</div>
+        <div class="desc">Минимальный урон мистического луча равен 0, максимальный увеличен.<br>Прокачка: +0,5% к физическому и магическому урону за уровень.</div>
       </div>
       <div class="skill">
-        <div class="name">[ ⚜️ ] Бог обмана <span style="color:var(--muted);font-size:12px">(пассивка, 1 раз за бой + 5% шанс)</span></div>
-        <div class="desc">В начале боя с шансом 25% (растёт с удачей, кап 50%) создаёт копию с 50% ХП. Копия с вероятностью 25% принимает весь урон. В течение боя 5% шанс создать ещё одну (не более 2 одновременно). Прокачка: +1% к удаче за уровень.</div>
+        <div class="name">[ ⚜️ ] Бог обмана <span style="color:var(--muted);font-size:12px">(пассивка)</span></div>
+        <div class="desc"><b>Когда иллюзия активна:</b><br>С вероятностью 25% иллюзия принимает весь урон на себя, после чего исчезает.<br>С вероятностью 10% атака полностью аннулируется и не наносит урона.<br>Первый удар по Трикстеру во время действия иллюзии наносит на 20% меньше урона.<br>Иллюзия существует до тех пор, пока не примет урон на себя.<br><br><b>Когда иллюзии нет:</b><br>Каждый ход с вероятностью 10% Трикстер крадёт умение противника на 2 хода. При активации умение сразу исчезает. Противник не может использовать украденное умение.<br><br>Прокачка: +1% к собственной удаче за уровень. Каждые 100 единиц Удачи увеличивают максимальный урон «Мистического луча» на 0,5% от его базового урона.</div>
       </div>
       <div class="skill">
         <div class="name">[ ⚜️ ] Змеиный оскал <span style="color:var(--muted);font-size:12px">(пассивка)</span></div>
-        <div class="desc">Любая атака с вероятностью 20% накладывает яд = 15% от (физ. атака + маг. атака) до конца боя. Не стакается.</div>
+        <div class="desc">Каждая атака Трикстера с вероятностью 20% накладывает на противника яд.<br>Яд наносит урон в размере 15% от суммы физической и магической атаки Трикстера и действует до конца боя.<br>Яд не складывается: повторное срабатывание не усиливает и не обновляет эффект.</div>
       </div>
       <div class="skill">
-        <div class="name">[ ⚜️ ] Мистический луч <span style="color:var(--muted);font-size:12px">(откат: 0, стоимость: 10–50 маны)</span></div>
-        <div class="desc">Вызывает мистический луч. 50% — маг. урон (0 – маг×3), 50% — физ. урон (0 – маг×3 как физ.). Шанс случайного эффекта через «Коварность».</div>
+        <div class="name">[ ⚜️ ] Мистический луч <span style="color:var(--muted);font-size:12px">(откат: 0 ходов, стоимость: 1–50 маны)</span></div>
+        <div class="desc">Выпускает мистический луч, который с равной вероятностью наносит физический или магический урон.<br>Урон луча = соответствующая физическая или магическая атака × случайный множитель от 0 до максимального × крит.</div>
       </div>
       <div class="skill">
-        <div class="name">[ ⚜️ ] Бесчестный обмен <span style="color:var(--muted);font-size:12px">(откат: 5 ходов, стоимость: 50 маны)</span></div>
-        <div class="desc">Создаёт иллюзию — трикстер не получает урон в этот ход. Весь урон атаки врага возвращается обратно врагу.</div>
+        <div class="name">[ ⚜️ ] Бесчестный обмен <span style="color:var(--muted);font-size:12px">(откат: 3 хода, стоимость: 100 маны)</span></div>
+        <div class="desc">До конца текущего хода весь урон, направленный в Трикстера, возвращается обратно атакующему.<br>При использовании навыка с вероятностью 30% создаётся иллюзия. Шанс создания иллюзии увеличивается от Удачи, но не может превышать 50%.</div>
       </div>
       <div class="skill">
         <div class="name">[ ⚜️ ] Коварность и манипуляция <span style="color:var(--muted);font-size:12px">(пассивка)</span></div>
-        <div class="desc">10% шанс наложить на мистический луч случайный эффект. Растёт с удачей, кап: 50%.</div>
-      </div>
-      <div class="skill">
-        <div class="name">Зелья</div>
-        <div class="desc">Зелье ХП: +35% от макс. ХП. Зелье МП: +40% от макс. МП. По 3 штуки каждого на бой.</div>
+        <div class="desc">При использовании «Мистического луча» существует 20% вероятность активировать случайный дополнительный эффект.<br>Дополнительный эффект может сработать, даже если сам луч промахнулся.<br>Вероятность срабатывания увеличивается от Удачи, но не может превышать 50%.</div>
       </div>
     </div>
 
     <div class="card">
-      <h2 class="title">✦ ☠︎︎ Примарх Некродион</h2>
+      <h2 class="title">✦ ☠︎︎ Древоебатель</h2>
       <div class="grid2">
         <div><label>ХП</label><input id="eMaxHp" type="number" value="30000"></div>
         <div><label>Мин. физ. атака</label><input id="eAttackMin" type="number" value="100"></div>
@@ -132,7 +127,7 @@
         <div><label>Маг. защита</label><input id="eMagDef" type="number" value="5000"></div>
       </div>
       <div style="margin-top:14px">
-        <div class="subtitle">Умения Некродиона (галочки = активны)</div>
+        <div class="subtitle">Умения Древоебателя (галочки = активны)</div>
         <div id="enemySkillsList" style="display:grid;gap:6px;margin-top:6px"></div>
       </div>
     </div>
@@ -141,7 +136,7 @@
       <h2 class="title">Эффекты луча (Коварность)</h2>
       <div class="badges">
         <div class="pill">Шанс эффекта: <span id="godProcBadge">0%</span></div>
-        <div class="pill">Шанс клона: <span id="cloneChanceBadge">0%</span></div>
+        <div class="pill">Шанс иллюзии: <span id="illusionChanceBadge">0%</span></div>
         <div class="pill">Удача в бою: <span id="luckBadge">0</span></div>
       </div>
       <div id="effectsPreview"></div>
@@ -155,11 +150,11 @@
         <div class="badge" id="battleBadge">Бой не начат</div>
         <div class="badge" id="shadowCdBadge">Бесчестный обмен: готов</div>
         <div class="badge" id="poisonBadge">🐍 Яд: нет</div>
-        <div class="badge" id="cloneBadge">🪬 Клон: нет</div>
+        <div class="badge" id="illusionBadge">🪬 Иллюзия: нет</div>
       </div>
       <div class="fight-grid">
         <div class="panel"><div class="subtitle">✦ Трикстер</div><div id="playerState" class="mono state-line"></div></div>
-        <div class="panel"><div class="subtitle">✦ ☠︎︎ Примарх Некродион</div><div id="enemyState" class="mono state-line"></div></div>
+        <div class="panel"><div class="subtitle">✦ ☠︎︎ Древоебатель</div><div id="enemyState" class="mono state-line"></div></div>
       </div>
       <div class="badges" id="statusBadges" style="margin-top:10px"></div>
 
@@ -170,10 +165,9 @@
         <button type="button" class="b-reset" id="btnReset">Сброс</button>
         <button type="button" class="b-cast" id="btnCast" disabled>[ ⚜️ ] Мистический луч</button>
         <button type="button" class="b-shadow" id="btnShadow" disabled>[ ⚜️ ] Бесчестный обмен</button>
+        <button type="button" class="b-stolen" id="btnStolen" style="display:none" disabled>🎭 Украденное умение</button>
         <button type="button" class="b-phys" id="btnPhysAttack" disabled>🗡 Физ. атака</button>
         <button type="button" class="b-mag" id="btnMagAttack" disabled>✨ Маг. атака</button>
-        <button type="button" class="b-potion" id="btnHpPotion" disabled>🧪 Зелье ХП</button>
-        <button type="button" class="b-potion" id="btnMpPotion" disabled>🧪 Зелье МП</button>
         <button type="button" class="b-sim" id="btnSim4">Прогон 4</button>
         <button type="button" class="b-sim" id="btnSim8">Прогон 8</button>
         <button type="button" class="b-sim" id="btnSim20">Прогон 20</button>
@@ -193,32 +187,38 @@
 </div>
 
 <script>
-// ===== УМЕНИЯ НЕКРОДИОНА =====
+// ===== УМЕНИЯ Древоебателя =====
 const ENEMY_SKILLS = [
   { id:'boneGather',   name:'💀 Сбор костей',          defaultOn:true,  desc:'Если ранен, с шансом 25% на своём ходу восстанавливает 20% от потерянного ХП.' },
   { id:'block',        name:'🛡️ Блок',                  defaultOn:true,  desc:'30% шанс полностью заблокировать входящую атаку.' },
   { id:'suppress',     name:'🧲 Подавление рассудка',   defaultOn:true,  desc:'Снижает вашу удачу на 100 на весь бой.' },
-  { id:'humiliate',    name:'👊 Унижение',               defaultOn:true,  desc:'20% шанс нанести ×3 урона вместо обычной атаки.' },
-  { id:'parry',        name:'🏃‍♀️ Парирование',           defaultOn:false, desc:'Шанс парировать вашу атаку. Если парировано — навык уходит в откат и тратятся ресурсы.' },
-  { id:'defense3',     name:'🛡️ Защита 3',              defaultOn:false, desc:'Не может получить более 50% урона от максимального здоровья за один удар.' },
+  { id:'humiliate',    name:'👊 Унижение',              defaultOn:true,  desc:'20% шанс нанести ×3 урона вместо обычной атаки.' },
+  { id:'parry',        name:'🏃‍♀️ Парирование',          defaultOn:false, desc:'Шанс парировать вашу атаку. Если парировано — навык уходит в откат и тратятся ресурсы.' },
+  { id:'defense3',     name:'🛡️ Защита 3',             defaultOn:false, desc:'Не может получить более 50% урона от максимального здоровья за один удар.' },
   { id:'ignoreArmor',  name:'🎯 Игнор',                 defaultOn:false, desc:'Игнорирует защиту игрока постоянно.' },
   { id:'fleshAbsorb',  name:'🩸 Поглощение плоти',      defaultOn:false, desc:'Шанс нанести 100–300% урона от максимальной физ. атаки и конвертировать в ХП.' },
-  { id:'thunderSpear', name:'⚜ Громовое копье',         defaultOn:false, desc:'Бросает заряженное громовое копьё, наносящее ×3 от макс. физ. атаки. Всегда приоритетнее атаки игрока, игнорирует некоторые механики классов.' },
-  { id:'whirlwind',    name:'💨 Волчок',                 defaultOn:false, desc:'Закручивается и движется на вас. Урон 50–350.' },
+  { id:'thunderSpear', name:'⚜ Громовое копье',        defaultOn:false, desc:'Бросает заряженное громовое копьё, наносящее ×3 от макс. физ. атаки. Всегда приоритетнее атаки игрока, игнорирует некоторые механики классов.' },
+  { id:'whirlwind',    name:'💨 Волчок',                defaultOn:false, desc:'Закручивается и движется на вас. Урон 50–350.' },
   { id:'residual2',    name:'🗡️ Остаточное мастерство v2', defaultOn:false, desc:'Наносит 50–250% от макс. урона.' },
   { id:'reflexes',     name:'🛡️ Запредельные рефлексы', defaultOn:false, desc:'С шансом снижает входящий урон на 70%.' },
   { id:'healing',      name:'🎶 Лечение',               defaultOn:false, desc:'Восстанавливает 1/3 от максимального ХП.' },
-  { id:'spiderSpores', name:'🕸 Паучьи споры',           defaultOn:false, desc:'Паучки оглушают и атакуют дважды (комбо-удар).' },
+  { id:'spiderSpores', name:'🕸 Паучьи споры',          defaultOn:false, desc:'Паучки оглушают и атакуют дважды (комбо-удар).' },
   { id:'dirtyStart',   name:'🧨 Нечестное начало',      defaultOn:false, desc:'Обнуляет вашу стамину или ману в начале боя.' },
   { id:'field2',       name:'🧲 Поле 2',                defaultOn:false, desc:'Снижает вашу удачу на 100 (дополнительно к Подавлению).' },
-  { id:'defense1',     name:'🛡️ Защита',                defaultOn:false, desc:'30% шанс снизить входящий урон на 70%.' },
+  { id:'defense1',     name:'🛡️ Защита',               defaultOn:false, desc:'30% шанс снизить входящий урон на 70%.' },
   { id:'critCrit1',    name:'💥 Критический крит 1',    defaultOn:false, desc:'20% шанс снять 70% ХП игрока.' },
   { id:'bestFencer',   name:'🤺 Лучшая фехтовальщица', defaultOn:false, desc:'Высокий шанс парировать атаку. (90% шанс) — тратит ресурсы атаки, урон не проходит.' },
 ];
 
 function getActiveSkills(){
   const active={};
-  ENEMY_SKILLS.forEach(s=>{ const cb=document.getElementById('esk_'+s.id); active[s.id]=cb?cb.checked:s.defaultOn; });
+  ENEMY_SKILLS.forEach(s=>{
+    const cb=document.getElementById('esk_'+s.id);
+    active[s.id]=cb?cb.checked:s.defaultOn;
+  });
+  if(state.stolenSkill && state.stolenSkill.turns>0){
+    active[state.stolenSkill.id]=false;
+  }
   return active;
 }
 
@@ -233,945 +233,724 @@ function buildEnemySkillsUI(){
   `).join('');
 }
 
-// ===== ЭФФЕКТЫ ЛУЧА (по таблице) =====
-// Веса: common=40, uncommon=30, rare=20, super_rare=7, very_rare=3
+// ===== ЭФФЕКТЫ МИСТИЧЕСКОГО ЛУЧА =====
 const RARITY_WEIGHTS = {common:40, uncommon:30, rare:20, super_rare:7, very_rare:3};
-const RARITY_LABELS  = {common:'Обычный', uncommon:'Необычный', rare:'Редкий', super_rare:'Супер редкий', very_rare:'Очень редкий'};
+const RARITY_LABELS  = {common:'common', uncommon:'uncommon', rare:'rare', super_rare:'super_rare', very_rare:'very_rare'};
 
 const EFFECTS = [
-  // Щиты
-  {id:'shield10', rarity:'common',
-   desc:'[ ⚜️ ] Часть луча стала щитом.',
-   name:'Щит 10% от макс. ХП',
-   apply:(s,l)=>{ const n=round(s.player.maxHp*0.10); s.player.shield+=n; l.push('  🛡 Щит +'+n); }},
-  {id:'shield15', rarity:'rare',
-   desc:'[ ⚜️ ] Луч окутал вас защитой.',
-   name:'Щит 15% от макс. ХП',
-   apply:(s,l)=>{ const n=round(s.player.maxHp*0.15); s.player.shield+=n; l.push('  🛡 Щит +'+n); }},
-  {id:'shield20', rarity:'very_rare',
-   desc:'[ ⚜️ ] Появился магический барьер.',
-   name:'Щит 20% от макс. ХП',
-   apply:(s,l)=>{ const n=round(s.player.maxHp*0.20); s.player.shield+=n; l.push('  🛡 Щит +'+n); }},
+  {id:'shield10', type:'Щит', rarity:'common', desc:'[ ⚜️ ] Часть луча стала щитом.', name:'Щит 10% от макс. ХП',
+   apply:(s,l)=>addShield(s.player,round(s.player.maxHp*0.10),l,'🛡 Щит')},
+  {id:'shield15', type:'Щит', rarity:'rare', desc:'[ ⚜️ ] Луч окутал вас защитой.', name:'Щит 15% от макс. ХП',
+   apply:(s,l)=>addShield(s.player,round(s.player.maxHp*0.15),l,'🛡 Щит')},
+  {id:'shield20', type:'Щит', rarity:'very_rare', desc:'[ ⚜️ ] Появился магический барьер.', name:'Щит 20% от макс. ХП',
+   apply:(s,l)=>addShield(s.player,round(s.player.maxHp*0.20),l,'🛡 Щит')},
 
-  // Снижение урона
-  {id:'red80', rarity:'very_rare',
-   desc:'[ ⚜️ ] Иллюзия почти спасла вас.',
-   name:'Урон снижен на 80% (след. удар)',
-   apply:(s,l)=>{ s.player.oneHitReduction=0.80; l.push('  🛡 Следующий урон −80%'); }},
-  {id:'red50', rarity:'rare',
-   desc:'[ ⚜️ ] Удар частично отклонён.',
-   name:'Урон снижен на 50% (след. удар)',
-   apply:(s,l)=>{ s.player.oneHitReduction=0.50; l.push('  🛡 Следующий урон −50%'); }},
-  {id:'red30', rarity:'common',
-   desc:'[ ⚜️ ] Луч немного смягчил удар.',
-   name:'Урон снижен на 30% (след. удар)',
-   apply:(s,l)=>{ s.player.oneHitReduction=0.30; l.push('  🛡 Следующий урон −30%'); }},
+  {id:'red80', type:'Снижение урона', rarity:'very_rare', desc:'[ ⚜️ ] Иллюзия почти спасла вас.', name:'Урон снижен на 80%',
+   apply:(s,l)=>{s.player.oneHitReduction=Math.max(s.player.oneHitReduction,0.80);l.push('  🛡 Следующий входящий урон снижен на 80%');}},
+  {id:'red50', type:'Снижение урона', rarity:'rare', desc:'[ ⚜️ ] Удар частично отклонён.', name:'Урон снижен на 50%',
+   apply:(s,l)=>{s.player.oneHitReduction=Math.max(s.player.oneHitReduction,0.50);l.push('  🛡 Следующий входящий урон снижен на 50%');}},
+  {id:'red30', type:'Снижение урона', rarity:'common', desc:'[ ⚜️ ] Луч немного смягчил удар.', name:'Урон снижен на 30%',
+   apply:(s,l)=>{s.player.oneHitReduction=Math.max(s.player.oneHitReduction,0.30);l.push('  🛡 Следующий входящий урон снижен на 30%');}},
 
-  // Игнор урона
-  {id:'dodge1', rarity:'uncommon',
-   desc:'[ ⚜️ ] Вы исчезли на мгновение.',
-   name:'Игнор урона (след. атака)',
-   apply:(s,l)=>{ s.player.dodgeNext=true; l.push('  💨 Игнор следующего урона'); }},
-  {id:'dodge2', rarity:'very_rare',
-   desc:'[ ⚜️ ] Пространство исказилось.',
-   name:'Игнор урона (след. атака)',
-   apply:(s,l)=>{ s.player.dodgeNext=true; l.push('  💨 Игнор следующего урона'); }},
-  {id:'dodge3', rarity:'rare',
-   desc:'[ ⚜️ ] Вы создали много иллюзий.',
-   name:'Игнор урона (след. атака)',
-   apply:(s,l)=>{ s.player.dodgeNext=true; l.push('  💨 Игнор следующего урона'); }},
+  {id:'ignoreAll', type:'Игнор урона', rarity:'uncommon', desc:'[ ⚜️ ] Вы исчезли на мгновение.', name:'Игнор всего урона',
+   apply:(s,l)=>{s.player.ignoreAllNext=true;l.push('  💨 Следующий входящий урон полностью игнорируется');}},
+  {id:'ignoreSkill', type:'Игнор урона', rarity:'very_rare', desc:'[ ⚜️ ] Пространство исказилось.', name:'Игнор урона умения 2 хода',
+   apply:(s,l)=>{s.player.ignoreSkillTurns=Math.max(s.player.ignoreSkillTurns,2);l.push('  💨 Урон умений игнорируется 2 хода');}},
+  {id:'ignoreBasic', type:'Игнор урона', rarity:'rare', desc:'[ ⚜️ ] Вы создали много иллюзий.', name:'Игнор урона с руки 1 ход',
+   apply:(s,l)=>{s.player.ignoreBasicTurns=Math.max(s.player.ignoreBasicTurns,1);l.push('  💨 Урон с руки игнорируется 1 ход');}},
 
-  // Отражение
-  {id:'reflect1', rarity:'very_rare',
-   desc:'[ ⚜️ ] Отражение урона обратно во врага.',
-   name:'Отражение урона',
-   apply:(s,l)=>{ s.player.reflectNext=true; l.push('  ↩️ Следующая атака врага отразится'); }},
-  {id:'reflect2', rarity:'uncommon',
-   desc:'[ ⚜️ ] Враг вдруг начал избивать сам себя.',
-   name:'Враг получает свой урон',
-   apply:(s,l)=>{ s.player.reflectNext=true; l.push('  ↩️ Следующая атака врага отразится'); }},
-  {id:'reflect3', rarity:'rare',
-   desc:'[ ⚜️ ] Удар отскочил от вас.',
-   name:'Перенаправление урона во врага',
-   apply:(s,l)=>{ s.player.reflectNext=true; l.push('  ↩️ Следующая атака врага отразится'); }},
+  {id:'reflect', type:'Отражение', rarity:'rare', desc:'[ ⚜️ ] Отражение урона обратно во врага.', name:'Отражение урона',
+   apply:(s,l)=>{s.player.reflectNext=true;l.push('  ↩️ Следующий входящий урон отражается');}},
+  {id:'selfHit', type:'Отражение', rarity:'uncommon', desc:'[ ⚜️ ] Враг вдруг начал избивать сам себя', name:'Враг получает свой урон',
+   apply:(s,l)=>{s.player.reflectNext=true;l.push('  ↩️ Следующая атака врага ударит его самого');}},
 
-  // Ослепление
-  {id:'blind1', rarity:'common',
-   desc:'[ ⚜️ ] Вспышка ослепила врага.',
-   name:'Ослепление (1 ход)',
-   apply:(s,l)=>{ s.enemy.blind=1; l.push('  👁 Враг ослеплён на 1 ход'); }},
-  {id:'blind2', rarity:'rare',
-   desc:'[ ⚜️ ] Враг ничего не видит.',
-   name:'Ослепление (1 ход)',
-   apply:(s,l)=>{ s.enemy.blind=1; l.push('  👁 Враг ослеплён на 1 ход'); }},
-  {id:'blind3', rarity:'uncommon',
-   desc:'[ ⚜️ ] Свет режет глаза.',
-   name:'Ослепление (1 ход)',
-   apply:(s,l)=>{ s.enemy.blind=1; l.push('  👁 Враг ослеплён на 1 ход'); }},
+  {id:'blind1', type:'Ослепление', rarity:'common', desc:'[ ⚜️ ] Вспышка ослепила врага.', name:'Ослепление (1 ход)',
+   apply:(s,l)=>{s.enemy.blind=Math.max(s.enemy.blind,1);l.push('  👁 Враг ослеплён на 1 ход');}},
+  {id:'blind2', type:'Ослепление', rarity:'uncommon', desc:'[ ⚜️ ] Свет режет глаза.', name:'Ослепление (2 хода)',
+   apply:(s,l)=>{s.enemy.blind=Math.max(s.enemy.blind,2);l.push('  👁 Враг ослеплён на 2 хода');}},
 
-  // Оглушение
-  {id:'stun1', rarity:'common',
-   desc:'[ ⚜️ ] Враг застыл на месте.',
-   name:'Оглушение (1 ход)',
-   apply:(s,l)=>{ s.enemy.stun=1; l.push('  🪨 Враг оглушён на 1 ход'); }},
-  {id:'stun2', rarity:'uncommon',
-   desc:'[ ⚜️ ] Тело врага сковало льдом.',
-   name:'Оглушение (1 ход)',
-   apply:(s,l)=>{ s.enemy.stun=1; l.push('  🪨 Враг оглушён на 1 ход'); }},
-  {id:'stun3', rarity:'rare',
-   desc:'[ ⚜️ ] Противник обращён в камень.',
-   name:'Оглушение (1 ход)',
-   apply:(s,l)=>{ s.enemy.stun=1; l.push('  🪨 Враг оглушён на 1 ход'); }},
+  {id:'stun1', type:'Оглушение', rarity:'common', desc:'[ ⚜️ ] Тело врага сковало льдом.', name:'Оглушение (1 ход)',
+   apply:(s,l)=>{s.enemy.stun=Math.max(s.enemy.stun,1);l.push('  🪨 Враг оглушён на 1 ход');}},
+  {id:'stun2', type:'Оглушение', rarity:'uncommon', desc:'[ ⚜️ ] Враг обращен в камень.', name:'Оглушение (2 хода)',
+   apply:(s,l)=>{s.enemy.stun=Math.max(s.enemy.stun,2);l.push('  🪨 Враг оглушён на 2 хода');}},
 
-  // Хил/риск
-  {id:'hr1', rarity:'rare',
-   desc:'[ ⚜️ ] Энергия исцеляет вас.',
-   name:'90%: +35% ХП / 10%: враг +10% ХП',
-   apply:(s,l)=>{
-     if(Math.random()<0.9){ const h=round(s.player.maxHp*0.35); healPlayer(s,h,l,'  💚 Исцеление +'); }
-     else { const h=round(s.enemy.maxHp*0.10); const b=s.enemy.hp; s.enemy.hp=Math.min(s.enemy.maxHp,s.enemy.hp+h); l.push('  💀 Враг получил +'+(s.enemy.hp-b)+' ХП'); }
-   }},
-  {id:'hr2', rarity:'very_rare',
-   desc:'[ ⚜️ ] Вы чувствуете как раны затягиваются.',
-   name:'90%: +50% ХП / 10%: враг +15% ХП',
-   apply:(s,l)=>{
-     if(Math.random()<0.9){ const h=round(s.player.maxHp*0.50); healPlayer(s,h,l,'  💚 Исцеление +'); }
-     else { const h=round(s.enemy.maxHp*0.15); const b=s.enemy.hp; s.enemy.hp=Math.min(s.enemy.maxHp,s.enemy.hp+h); l.push('  💀 Враг получил +'+(s.enemy.hp-b)+' ХП'); }
-   }},
-  {id:'hr3', rarity:'uncommon',
-   desc:'[ ⚜️ ] Вы чувствуете себя лучше.',
-   name:'90%: +20% ХП / 10%: враг +5% ХП',
-   apply:(s,l)=>{
-     if(Math.random()<0.9){ const h=round(s.player.maxHp*0.20); healPlayer(s,h,l,'  💚 Исцеление +'); }
-     else { const h=round(s.enemy.maxHp*0.05); const b=s.enemy.hp; s.enemy.hp=Math.min(s.enemy.maxHp,s.enemy.hp+h); l.push('  💀 Враг получил +'+(s.enemy.hp-b)+' ХП'); }
-   }},
+  {id:'heal35', type:'Хил', rarity:'rare', desc:'[ ⚜️ ] Энергия исцеляет вас.', name:'90%: +35% ХП / 10%: враг +10% ХП (РБ случайный игрок и Трикстер)',
+   apply:(s,l)=>riskyHeal(s,l,0.35,0.10)},
+  {id:'heal50', type:'Хил', rarity:'very_rare', desc:'[ ⚜️ ] Вы чувствуете как раны затягиваются.', name:'90%: +50% ХП / 10%: враг +15% ХП (РБ случайный игрок и Трикстер)',
+   apply:(s,l)=>riskyHeal(s,l,0.50,0.15)},
+  {id:'heal20', type:'Хил', rarity:'uncommon', desc:'[ ⚜️ ] Вы чувствуете себя лучше.', name:'90%: +20% ХП / 10%: враг +5% ХП (РБ случайный игрок и Трикстер)',
+   apply:(s,l)=>riskyHeal(s,l,0.20,0.05)},
 
-  // Вампиризм
-  {id:'vamp2', rarity:'rare',
-   desc:'[ ⚜️ ] Тонкие струйки крови медленно текут в вашу сторону.',
-   name:'Вампиризм 2% (2 хода)',
-   apply:(s,l)=>{ s.player.vampTurns=2; s.player.vampPct=0.02; l.push('  🩸 Вампиризм 2% на 2 хода'); }},
-  {id:'vamp3', rarity:'very_rare',
-   desc:'[ ⚜️ ] Луч буквально высасывает жизненную силу врага.',
-   name:'Вампиризм 3% (2 хода)',
-   apply:(s,l)=>{ s.player.vampTurns=2; s.player.vampPct=0.03; l.push('  🩸 Вампиризм 3% на 2 хода'); }},
-  {id:'vamp1', rarity:'common',
-   desc:'[ ⚜️ ] Проснулась жажда крови.',
-   name:'Вампиризм 1% (2 хода)',
-   apply:(s,l)=>{ s.player.vampTurns=2; s.player.vampPct=0.01; l.push('  🩸 Вампиризм 1% на 2 хода'); }},
+  {id:'vamp2', type:'Вампиризм', rarity:'rare', desc:'[ ⚜️ ] Тонкие струйки крови медленно текут в вашу сторону.', name:'Вампиризм 2% (2 хода)',
+   apply:(s,l)=>{s.player.vampTurns=2;s.player.vampPct=0.02;l.push('  🩸 Вампиризм 2% на 2 хода');}},
+  {id:'vamp3', type:'Вампиризм', rarity:'very_rare', desc:'[ ⚜️ ] Луч буквально высасывает жизненную силу врага.', name:'Вампиризм 3% (2 хода)',
+   apply:(s,l)=>{s.player.vampTurns=2;s.player.vampPct=0.03;l.push('  🩸 Вампиризм 3% на 2 хода');}},
+  {id:'vamp1', type:'Вампиризм', rarity:'common', desc:'[ ⚜️ ] Проснулась жажда крови.', name:'Вампиризм 1% (2 хода)',
+   apply:(s,l)=>{s.player.vampTurns=2;s.player.vampPct=0.01;l.push('  🩸 Вампиризм 1% на 2 хода');}},
 
-  // Лечение от урона
-  {id:'dmg15', rarity:'very_rare',
-   desc:'[ ⚜️ ] Урон обратился в лечение.',
-   name:'15% от урона луча → ХП',
-   apply:(s,l)=>{ const h=round(s.lastBurstDamage*0.15); healPlayer(s,h,l,'  💚 Лечение от урона +'); }},
-  {id:'dmg10', rarity:'rare',
-   desc:'[ ⚜️ ] Луч отскочил обратно к вам.',
-   name:'10% от урона луча → ХП',
-   apply:(s,l)=>{ const h=round(s.lastBurstDamage*0.10); healPlayer(s,h,l,'  💚 Лечение от урона +'); }},
-  {id:'dmg5',  rarity:'uncommon',
-   desc:'[ ⚜️ ] Часть силы восстановила вас.',
-   name:'5% от урона луча → ХП',
-   apply:(s,l)=>{ const h=round(s.lastBurstDamage*0.05); healPlayer(s,h,l,'  💚 Лечение от урона +'); }},
+  {id:'healDamage15', type:'Лечение от урона', rarity:'very_rare', desc:'[ ⚜️ ] Урон обратился в лечение.', name:'15% от урона в ХП (РБ случайный игрок)',
+   apply:(s,l)=>healPlayer(s,round(s.lastBurstDamage*0.15),l,'  💚 Лечение от урона +')},
+  {id:'healDamage10', type:'Лечение от урона', rarity:'rare', desc:'[ ⚜️ ] Луч отскочил обратно к вам.', name:'10% от урона в ХП (РБ случайный игрок)',
+   apply:(s,l)=>healPlayer(s,round(s.lastBurstDamage*0.10),l,'  💚 Лечение от урона +')},
+  {id:'healDamage5', type:'Лечение от урона', rarity:'uncommon', desc:'[ ⚜️ ] Часть силы восстановила вас.', name:'5% от урона в ХП (РБ случайный игрок)',
+   apply:(s,l)=>healPlayer(s,round(s.lastBurstDamage*0.05),l,'  💚 Лечение от урона +')},
 
-  // Сильный щит (super_rare)
-  {id:'strongshield', rarity:'super_rare',
-   desc:'[ ⚜️ ] Возник мощный барьер.',
-   name:'Щит 50% от макс. ХП (2 хода)',
-   apply:(s,l)=>{ const n=round(s.player.maxHp*0.50); s.player.shield+=n; l.push('  🛡 Мощный щит +'+n); }},
+  {id:'strongShield', type:'Сильный щит', rarity:'super_rare', desc:'[ ⚜️ ] Возник мощный барьер.', name:'Щит 50% от макс. ХП на 2 хода',
+   apply:(s,l)=>{const n=round(s.player.maxHp*0.50);addTimedShield(s.player,n,2,l);}},
+  {id:'fullHeal', type:'Полный хил', rarity:'super_rare', desc:'[ ⚜️ ] Радужный луч.', name:'Полное восстановление ХП (РБ 100% от макс. ХП разделяется на всех членов пати)',
+   apply:(s,l)=>{const b=s.player.hp;s.player.hp=s.player.maxHp;l.push('  💚 Полное восстановление: +'+(s.player.hp-b)+' ХП');}},
+  {id:'regen', type:'Мелкий хил', rarity:'super_rare', desc:'[ ⚜️ ] Слабое восстановление.', name:'Регенерация 5% от макс. ХП на 2 хода (РБ случайного игрока)',
+   apply:(s,l)=>{s.player.regenTurns=2;s.player.regenPct=0.05;l.push('  💚 Регенерация 5% от макс. ХП на 2 хода');}},
+  {id:'resurrection', type:'Воскрешение', rarity:'super_rare', desc:'[ ⚜️ ] Странное чувство внутри', name:'Если здоровье падает до 0 в этом ходу, восстанет с 1 ХП',
+   apply:(s,l)=>{s.player.resurrectThisTurn=true;l.push('  ✨ Воскрешение готово до конца текущего хода');}},
+  {id:'coneDamage', type:'Доп урон', rarity:'uncommon', desc:'[ ⚜️ ] Луч ударил конусом', name:'Доп. урон 50% физ. или маг. атаки. Даже при промахе луча урон проходит',
+   apply:(s,l)=>applyConeDamage(s,l)},
+  {id:'poisonRay', type:'Яд', rarity:'very_rare', desc:'[ ⚜️ ] Ядовито-зелёный луч вырывается из ваших рук', name:'Накладывает ×2 урона ядом; если яд уже наложен — наносит ×3 урона от наложенного яда',
+   apply:(s,l)=>applyPoisonRay(s,l)},
 
-  // Полный хил (super_rare)
-  {id:'fullheal', rarity:'super_rare',
-   desc:'[ ⚜️ ] Радужный луч.',
-   name:'Полное восстановление ХП',
-   apply:(s,l)=>{ const b=s.player.hp; s.player.hp=s.player.maxHp; l.push('  💚 Полный хил +'+(s.player.hp-b)+' ХП'); }},
-
-  // Регенерация на 2 хода (super_rare)
-  {id:'regen', rarity:'super_rare',
-   desc:'[ ⚜️ ] Слабое восстановление.',
-   name:'Регенерация 5% от макс. ХП на 2 хода',
-   apply:(s,l)=>{ s.player.regenTurns=2; s.player.regenPct=0.05; l.push('  💚 Регенерация 5% от макс. ХП на 2 хода'); }},
+  {id:'ignoreArmor100', type:'Игнор брони', rarity:'very_rare', desc:'[ ⚜️ ] Эфемерный луч проходит сквозь броню', name:'100% игнор брони', armorIgnorePct:1,
+   apply:(s,l)=>l.push('  🎯 Луч полностью игнорирует броню')},
+  {id:'ignoreArmor25', type:'Игнор брони', rarity:'uncommon', desc:'[ ⚜️ ] Луч затрагивает только часть брони противника', name:'25% игнор брони', armorIgnorePct:0.25,
+   apply:(s,l)=>l.push('  🎯 Луч игнорирует 25% брони')},
+  {id:'ignoreArmor50', type:'Игнор брони', rarity:'common', desc:'[ ⚜️ ] Луч пробивает половину брони', name:'50% игнор брони', armorIgnorePct:0.50,
+   apply:(s,l)=>l.push('  🎯 Луч игнорирует 50% брони')},
 ];
 
 // ===== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ =====
-function round(n){ return Math.max(0, Math.round(n)); }
-function healPlayer(s, amount, logs, prefix='💚 Хил: +'){
-  const before = s.player.hp;
-  s.player.hp = Math.min(s.player.maxHp, s.player.hp + amount);
-  logs.push(prefix + (s.player.hp - before) + ' ХП.');
-}
+function round(n){ return Math.max(0,Math.round(Number(n)||0)); }
 function el(id){ return document.getElementById(id); }
-function clamp(n,a,b){ return Math.max(a, Math.min(b, n)); }
+function clamp(n,a,b){ return Math.max(a,Math.min(b,n)); }
 function pct(cur,max){ return max<=0?0:Math.round(cur/max*100); }
 function bar(cur,max,fill=10){ const n=Math.round((clamp(cur,0,max)/Math.max(max,1))*fill); return '■'.repeat(n)+'□'.repeat(Math.max(0,fill-n)); }
 function rnd(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
 function escHtml(s){ return String(s).replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])); }
 
-function pickEffect(){
-  const total = EFFECTS.reduce((s,e)=>s+RARITY_WEIGHTS[e.rarity],0);
-  let r = Math.random()*total;
-  for(const e of EFFECTS){ r-=RARITY_WEIGHTS[e.rarity]; if(r<=0) return e; }
-  return EFFECTS[EFFECTS.length-1];
+function healPlayer(s,amount,logs,prefix='💚 Хил: +'){
+  const before=s.player.hp;
+  s.player.hp=Math.min(s.player.maxHp,s.player.hp+Math.max(0,round(amount)));
+  logs.push(prefix+(s.player.hp-before)+' ХП');
+}
+function riskyHeal(s,logs,playerPct,enemyPct){
+  if(Math.random()<0.90){ healPlayer(s,round(s.player.maxHp*playerPct),logs,'  💚 Исцеление +'); }
+  else {
+    const before=s.enemy.hp;
+    s.enemy.hp=Math.min(s.enemy.maxHp,s.enemy.hp+round(s.enemy.maxHp*enemyPct));
+    logs.push('  💀 Враг восстановил '+(s.enemy.hp-before)+' ХП');
+  }
+}
+function addShield(target,amount,logs,label='🛡 Щит'){
+  const n=round(amount); target.shield=(target.shield||0)+n; logs.push('  '+label+' +'+n);
+}
+function addTimedShield(target,amount,turns,logs){
+  const n=round(amount);
+  target.shield=(target.shield||0)+n;
+  target.timedShieldAmount=(target.timedShieldAmount||0)+n;
+  target.timedShieldTurns=Math.max(target.timedShieldTurns||0,turns);
+  logs.push('  🛡 Мощный щит +'+n+' на '+turns+' хода');
+}
+function pureDmg(target,amount){
+  const d=Math.min(target.hp,Math.max(0,round(amount)));
+  target.hp=clamp(target.hp-d,0,target.maxHp);
+  return d;
+}
+function dmgWithShield(target,amount){
+  let remaining=Math.max(0,round(amount));
+  let absorbed=0;
+  if((target.timedShieldAmount||0)>0 && remaining>0){
+    const take=Math.min(target.timedShieldAmount,remaining);
+    target.timedShieldAmount-=take;
+    target.shield=Math.max(0,(target.shield||0)-take);
+    remaining-=take; absorbed+=take;
+  }
+  if((target.shield||0)>0 && remaining>0){
+    const take=Math.min(target.shield,remaining);
+    target.shield-=take;
+    remaining-=take; absorbed+=take;
+  }
+  const dealt=Math.min(target.hp,remaining);
+  target.hp=clamp(target.hp-dealt,0,target.maxHp);
+  return {absorbed,dealtToHp:dealt,total:absorbed+dealt};
 }
 
-// ===== ФОРМУЛЫ ПЕРСОНАЖА =====
-// Физ. атака = (Сила + физ.оружие) × mul
-// Маг. атака = (Инт + маг.оружие) × mul
-// Луч: 0 – magAtk × burstMult (тип 50/50 маг/физ)
-// Яд: 10% от (физ + маг атака)
-// Удача в бою = baseLuck × (1 + godLevel×0.015) − 100
-// Шанс клона: 35% + (effLuck/5000)×45%, кап 50%
-// Шанс эффекта: 25% + (effLuck/5000)×25%, кап 50%
+function pickEffect(){
+  const rarityEntries=Object.entries(RARITY_WEIGHTS);
+  const total=rarityEntries.reduce((sum,[,w])=>sum+w,0);
+  let roll=Math.random()*total;
+  let rarity=rarityEntries[rarityEntries.length-1][0];
+  for(const [r,w] of rarityEntries){ roll-=w; if(roll<=0){rarity=r;break;} }
+  const pool=EFFECTS.filter(e=>e.rarity===rarity);
+  return pool[Math.floor(Math.random()*pool.length)];
+}
 
+// ===== ФОРМУЛЫ ТРИКСТЕРА =====
+// Нестабильный потенциал: +0,5% физического и магического урона за уровень.
+// Бог обмана: +1% к собственной удаче за уровень.
+// Максимальный множитель луча = 3 + (итоговая удача / 100) × 0,005.
+// Мистический луч = выбранная физ./маг. атака × случайный множитель от 0 до максимума × крит.
 function buildDerived(p){
-  const mul = 1 + p.unstableLevel*0.01;
-  p.physAtk = (p.strength + p.physWeapon) * mul;
-  p.magAtk  = (p.intellect + p.magWeapon) * mul;
-  // Удача растёт с уровнем Бога обмана (+1% за уровень)
-  p.effLuck = Math.max(0, Math.round(p.baseLuck * (1 + p.godLevel*0.01) - 100));
-  // Шанс клона: 25% base + luck
-  p.cloneChance = Math.min(0.50, 0.25 + (p.effLuck/5000)*0.25);
-  // Шанс эффекта (Коварность): 10% base + luck, кап 50%
-  p.godProc     = Math.min(0.50, 0.10 + (p.effLuck/5000)*0.40);
-  p.burstMax    = p.magAtk * p.burstMultiplier;
-  // Яд 15% от (физ + маг)
-  p.poisonPerTurn = round((p.physAtk + p.magAtk) * 0.15);
+  const damageMul=1+p.unstableLevel*0.005;
+  p.physAtk=(p.strength+p.physWeapon)*damageMul;
+  p.magAtk=(p.intellect+p.magWeapon)*damageMul;
+  const luckBeforePenalty=p.baseLuck*(1+p.godLevel*0.01);
+  p.effLuck=Math.max(0,Math.round(luckBeforePenalty-(p.luckPenalty||0)));
+  p.burstMultiplier=3+(p.effLuck/100)*0.005;
+  p.burstPhysMax=p.physAtk*p.burstMultiplier;
+  p.burstMagMax=p.magAtk*p.burstMultiplier;
+  p.burstMax=Math.max(p.burstPhysMax,p.burstMagMax);
+  p.poisonBase=round((p.physAtk+p.magAtk)*0.15);
+  p.illusionChance=Math.min(0.50,0.30+(p.effLuck/5000)*0.20);
+  p.godProc=Math.min(0.50,0.20+(p.effLuck/5000)*0.30);
   return p;
 }
 
-// ===== STATE =====
-const state = {
-  round:1, battleStarted:false, battleOver:false, playerTurn:false, isSimulating:false,
+// ===== СОСТОЯНИЕ =====
+const state={
+  round:1,battleStarted:false,battleOver:false,playerTurn:false,isSimulating:false,
   logs:['Песочница готова. Жми «Начало боя».'],
   sim:{runs:0,avgCastDamage:0,avgEnemyDamage:0,wins:0,losses:0,avgTurns:0,avgPoison:0,avgPhys:0},
-  player:{}, enemy:{}, cds:{shadow:0},
-  lastBurstDamage:0, poisonActive:false, poisonPerTurn:0,
-  clones:[] // массив объектов {hp, maxHp}, макс 2
+  player:{},enemy:{},cds:{shadow:0},
+  lastBurstDamage:0,lastBurstType:'magical',
+  poisonActive:false,poisonPerTurn:0,
+  illusionActive:false,illusionFirstHit:true,
+  dishonestExchangeActive:false,
+  stolenSkill:null,
 };
 
 function readInputsToState(reset=false){
-  const pp=state.player||{}, pe=state.enemy||{};
+  const pp=state.player||{},pe=state.enemy||{};
   const p={
-    maxHp:+el('pMaxHp').value, maxMp:+el('pMaxMp').value, maxSt:+el('pMaxSt').value,
-    strength:+el('pStr').value, intellect:+el('pInt').value,
-    physWeapon:+el('pPhysWeapon').value, magWeapon:+el('pMagWeapon').value,
-    baseLuck:+el('pLuck').value, unstableLevel:+el('pUnstableLevel').value, godLevel:+el('pGodLevel').value,
-    critChance:+el('pCritChance').value, critMultiplier:+el('pCritMult').value, burstMultiplier:+el('pBurstMult').value,
-    hp:  reset ? +el('pMaxHp').value : clamp(pp.hp  ?? +el('pMaxHp').value, 0, +el('pMaxHp').value),
-    mp:  reset ? +el('pMaxMp').value : clamp(pp.mp  ?? +el('pMaxMp').value, 0, +el('pMaxMp').value),
-    st:  reset ? +el('pMaxSt').value : clamp(pp.st  ?? +el('pMaxSt').value, 0, +el('pMaxSt').value),
-    shield:              reset ? 0     : (pp.shield||0),
-    dodgeNext:           reset ? false : !!pp.dodgeNext,
-    dodgeFromShadow:     reset ? false : !!pp.dodgeFromShadow,
-    reflectNext:         reset ? false : !!pp.reflectNext,
-    oneHitReduction:     reset ? 0     : (pp.oneHitReduction||0),
-    vampTurns:           reset ? 0     : (pp.vampTurns||0),
-    vampPct:             reset ? 0     : (pp.vampPct||0),
-    doubleIncomingNext:  reset ? false : !!pp.doubleIncomingNext,
-    hpPotions:           reset ? 3     : (pp.hpPotions??3),
-    mpPotions:           reset ? 3     : (pp.mpPotions??3),
-    regenTurns:          reset ? 0     : (pp.regenTurns||0),
-    regenPct:            reset ? 0     : (pp.regenPct||0),
+    maxHp:+el('pMaxHp').value,maxMp:+el('pMaxMp').value,maxSt:+el('pMaxSt').value,
+    strength:+el('pStr').value,intellect:+el('pInt').value,
+    physWeapon:+el('pPhysWeapon').value,magWeapon:+el('pMagWeapon').value,
+    baseLuck:+el('pLuck').value,unstableLevel:+el('pUnstableLevel').value,godLevel:+el('pGodLevel').value,
+    critChance:+el('pCritChance').value,critMultiplier:+el('pCritMult').value,
+    hp:reset?+el('pMaxHp').value:clamp(pp.hp??+el('pMaxHp').value,0,+el('pMaxHp').value),
+    mp:reset?+el('pMaxMp').value:clamp(pp.mp??+el('pMaxMp').value,0,+el('pMaxMp').value),
+    st:reset?+el('pMaxSt').value:clamp(pp.st??+el('pMaxSt').value,0,+el('pMaxSt').value),
+    luckPenalty:reset?0:(pp.luckPenalty||0),
+    shield:reset?0:(pp.shield||0),
+    timedShieldAmount:reset?0:(pp.timedShieldAmount||0),
+    timedShieldTurns:reset?0:(pp.timedShieldTurns||0),
+    ignoreAllNext:reset?false:!!pp.ignoreAllNext,
+    ignoreSkillTurns:reset?0:(pp.ignoreSkillTurns||0),
+    ignoreBasicTurns:reset?0:(pp.ignoreBasicTurns||0),
+    reflectNext:reset?false:!!pp.reflectNext,
+    oneHitReduction:reset?0:(pp.oneHitReduction||0),
+    vampTurns:reset?0:(pp.vampTurns||0),
+    vampPct:reset?0:(pp.vampPct||0),
+    regenTurns:reset?0:(pp.regenTurns||0),
+    regenPct:reset?0:(pp.regenPct||0),
+    resurrectThisTurn:reset?false:!!pp.resurrectThisTurn,
+    nextAttackIgnoreArmorPct:reset?0:(pp.nextAttackIgnoreArmorPct||0),
+    nextAttackDamageMult:reset?1:(pp.nextAttackDamageMult||1),
+    blockNext:reset?false:!!pp.blockNext,
+    parryNext:reset?false:!!pp.parryNext,
+    damageCapPct:reset?0:(pp.damageCapPct||0),
+    damageCapTurns:reset?0:(pp.damageCapTurns||0),
   };
-  state.player = buildDerived(p);
+  state.player=buildDerived(p);
 
-  state.enemy = {
+  state.enemy={
     maxHp:+el('eMaxHp').value,
-    hp:   reset ? +el('eMaxHp').value : clamp(pe.hp ?? +el('eMaxHp').value, 0, +el('eMaxHp').value),
-    attackMin:+el('eAttackMin').value, attackMax:+el('eAttackMax').value,
-    physDef:+el('ePhysDef').value, magDef:+el('eMagDef').value,
-    shield: reset?0:(pe.shield||0), blind:reset?0:(pe.blind||0),
-    stun:  reset?0:(pe.stun||0), blockReady:reset?false:!!pe.blockReady,
-    healCooldown: reset?0:(pe.healCooldown||0),
+    hp:reset?+el('eMaxHp').value:clamp(pe.hp??+el('eMaxHp').value,0,+el('eMaxHp').value),
+    attackMin:+el('eAttackMin').value,attackMax:+el('eAttackMax').value,
+    physDef:+el('ePhysDef').value,magDef:+el('eMagDef').value,
+    shield:reset?0:(pe.shield||0),
+    blind:reset?0:(pe.blind||0),stun:reset?0:(pe.stun||0),
+    blockReady:reset?false:!!pe.blockReady,
+    defenseReady:reset?false:!!pe.defenseReady,
+    reflexesReady:reset?false:!!pe.reflexesReady,
+    healCooldown:reset?0:(pe.healCooldown||0),
   };
   if(reset){
-    state.cds.shadow=0; state.poisonActive=false; state.poisonPerTurn=0;
-    state.clones=[]; state.lastBurstDamage=0;
+    state.cds.shadow=0;
+    state.lastBurstDamage=0;state.lastBurstType='magical';
+    state.poisonActive=false;state.poisonPerTurn=0;
+    state.illusionActive=false;state.illusionFirstHit=true;
+    state.dishonestExchangeActive=false;
+    state.stolenSkill=null;
   }
 }
 
-// ===== БОЕВЫЕ ФУНКЦИИ =====
-function pureDmg(target,amt){ const d=Math.max(0,round(amt)); target.hp=clamp(target.hp-d,0,target.maxHp); return d; }
-
-function dmgWithShield(target,amt){
-  const abs=Math.min(target.shield||0,amt);
-  target.shield=Math.max(0,(target.shield||0)-abs);
-  const rest=Math.max(0,amt-abs);
-  target.hp=clamp(target.hp-rest,0,target.maxHp);
-  return {absorbed:abs, dealtToHp:rest, total:abs+rest};
-}
-
-function mitigate(raw, type, logs, ignoreDefense=false){
-  let amt=Math.max(0,round(raw));
+// ===== УРОН ПО ВРАГУ =====
+function prepareEnemyDefense(){
   const sk=getActiveSkills();
-  
-  // 🎯 Игнор — если у врага есть, то не учитываем наши эффекты (но это для атак врага)
-  // Здесь mitigate применяется к атакам игрока по врагу
+  state.enemy.blockReady=sk.block&&Math.random()<0.30;
+  state.enemy.defenseReady=sk.defense1&&Math.random()<0.30;
+  state.enemy.reflexesReady=sk.reflexes&&Math.random()<0.35;
+}
 
-  if(state.enemy.blockReady){
-    logs.push('🛡️ Блок: Некродион полностью заблокировал урон.');
-    state.enemy.blockReady=false; return 0;
+function dealDamageToEnemy(raw,type,logs,options={}){
+  let amount=Math.max(0,round(raw));
+  const sk=getActiveSkills();
+  const canBlock=options.canBlock!==false;
+  const canDefensiveProcs=options.canDefensiveProcs!==false;
+  if(canBlock&&state.enemy.blockReady){
+    state.enemy.blockReady=false;
+    logs.push('  🛡 Древоебатель полностью заблокировал урон');
+    return {total:0,absorbed:0,armorAbsorbed:0,blocked:true};
   }
-
-  // 🛡️ Запредельные рефлексы — снижает входящий урон на 70%
-  if(state.enemy.reflexesReady){
-    const cut=round(amt*0.70);
-    amt=Math.max(0,amt-cut);
-    logs.push('🛡️ Запредельные рефлексы: урон снижен на '+cut+' (−70%)');
-    state.enemy.reflexesReady=false;
+  if(canDefensiveProcs&&state.enemy.reflexesReady){
+    const cut=round(amount*0.70);amount=Math.max(0,amount-cut);state.enemy.reflexesReady=false;
+    logs.push('  🛡 Запредельные рефлексы: −'+cut+' урона');
+  } else if(canDefensiveProcs&&state.enemy.defenseReady){
+    const cut=round(amount*0.70);amount=Math.max(0,amount-cut);state.enemy.defenseReady=false;
+    logs.push('  🛡 Защита: −'+cut+' урона');
   }
-
-  // 🛡️ Защита — 30% шанс снизить урон на 70% (если reflexes не сработал)
-  if(!state.enemy.reflexesReady && state.enemy.defenseReady){
-    const cut=round(amt*0.70);
-    amt=Math.max(0,amt-cut);
-    logs.push('🛡️ Защита: входящий урон снижен на 70% (−'+cut+')');
-    state.enemy.defenseReady=false;
-  }
-
-  // 🛡️ Защита 3 — не более 50% от макс. ХП за удар
+  const ignorePct=clamp(options.ignoreArmorPct||0,0,1);
+  const defense=type==='physical'?state.enemy.physDef:state.enemy.magDef;
+  const effectiveDefense=round(defense*(1-ignorePct));
+  const armorAbsorbed=Math.min(amount,effectiveDefense);
+  amount=Math.max(0,amount-effectiveDefense);
   if(sk.defense3){
     const cap=round(state.enemy.maxHp*0.50);
-    if(amt>cap){ logs.push('🛡️ Защита 3: урон ограничен до '+cap+' (50% макс. ХП)'); amt=cap; }
+    if(amount>cap){logs.push('  🛡 Защита 3: урон ограничен до '+cap);amount=cap;}
   }
-
-  if(ignoreDefense) return amt;
-  const def = type==='physical' ? state.enemy.physDef : state.enemy.magDef;
-  const reduced = Math.max(0,round(amt-def));
-  if(def>0) logs.push((type==='physical'?'🪖 Физ. защита':'✨ Маг. защита')+' поглотила '+(amt-reduced)+'.');
-  return reduced;
+  const res=dmgWithShield(state.enemy,amount);
+  return {total:res.total,absorbed:res.absorbed,armorAbsorbed,blocked:false};
 }
 
-// Попадание по игроку: 50% шанс клон принимает урон (если жив)
-function dmgToPlayerOrClone(raw, logs){
-  const alive = state.clones.filter(c=>c.hp>0);
-  if(alive.length>0 && Math.random()<0.5){
-    // случайный живой клон принимает урон
-    const clone = alive[Math.floor(Math.random()*alive.length)];
-    const d = Math.min(clone.hp, Math.max(0, round(raw)));
-    clone.hp -= d;
-    const idx = state.clones.indexOf(clone)+1;
-    logs.push('🪬 Клон '+idx+' принял '+d+' урона. ХП: '+clone.hp+'/'+clone.maxHp+'.');
-    if(clone.hp<=0){
-      state.clones = state.clones.filter(c=>c!==clone);
-      logs.push('🪬 Клон '+idx+' уничтожен.');
-    }
+function applyConeDamage(s,logs){
+  const type=s.lastBurstType;
+  const base=type==='physical'?s.player.physAtk:s.player.magAtk;
+  const r=dealDamageToEnemy(base*0.50,type,logs,{canBlock:false,canDefensiveProcs:false});
+  logs.push('  🔺 Дополнительный '+(type==='physical'?'физический':'магический')+' урон: '+r.total);
+}
+function applyPoisonRay(s,logs){
+  if(s.poisonActive){
+    const d=pureDmg(s.enemy,s.poisonPerTurn*3);
+    logs.push('  🐍 Яд уже был наложен: мгновенно нанесено ×3 = '+d+' урона');
+  } else {
+    s.poisonActive=true;
+    s.poisonPerTurn=s.player.poisonBase*2;
+    logs.push('  🐍 Наложен усиленный яд ×2: '+s.poisonPerTurn+' урона за раунд');
+  }
+}
+
+// ===== УРОН ПО ТРИКСТЕРУ =====
+function resolveIncomingDamage(raw,lines,label,kind='basic',options={}){
+  let amount=Math.max(0,round(raw));
+  const p=state.player;
+
+  if(state.dishonestExchangeActive){
+    const reflected=pureDmg(state.enemy,amount);
+    lines.push(label+' → ↩️ Бесчестный обмен вернул '+reflected+' урона атакующему');
     return 0;
   }
-  const r=dmgWithShield(state.player, raw);
-  if(r.total>0) logs.push('💥 Вы получаете '+r.total+' урона.');
-  return r.total;
+  if(p.blockNext){p.blockNext=false;lines.push(label+' → 🛡 полностью заблокировано');return 0;}
+  if(p.parryNext){p.parryNext=false;lines.push(label+' → 🏃 атака парирована');return 0;}
+  if(p.ignoreAllNext){p.ignoreAllNext=false;lines.push(label+' → 💨 весь урон проигнорирован');return 0;}
+  if(kind==='skill'&&p.ignoreSkillTurns>0){lines.push(label+' → 💨 урон умения проигнорирован');return 0;}
+  if(kind==='basic'&&p.ignoreBasicTurns>0){lines.push(label+' → 💨 урон с руки проигнорирован');return 0;}
+  if(p.reflectNext){
+    p.reflectNext=false;
+    const reflected=pureDmg(state.enemy,amount);
+    lines.push(label+' → ↩️ '+reflected+' урона отражено во врага');
+    return 0;
+  }
+
+  if(state.illusionActive&&!options.ignoreIllusion){
+    const roll=Math.random();
+    if(roll<0.25){
+      state.illusionActive=false;state.illusionFirstHit=true;
+      lines.push(label+' → 🪬 иллюзия приняла весь урон и исчезла');
+      return 0;
+    }
+    if(roll<0.35){
+      lines.push(label+' → 🪬 атака полностью аннулирована иллюзией');
+      return 0;
+    }
+    if(state.illusionFirstHit){
+      const cut=round(amount*0.20);amount=Math.max(0,amount-cut);state.illusionFirstHit=false;
+      label+=' → иллюзия ослабила первый удар на 20% (−'+cut+')';
+    }
+  }
+
+  if(p.oneHitReduction>0){
+    const cut=round(amount*p.oneHitReduction);amount=Math.max(0,amount-cut);
+    label+=' → снижение '+Math.round(p.oneHitReduction*100)+'% (−'+cut+')';
+    p.oneHitReduction=0;
+  }
+  if(p.damageCapPct>0){
+    const cap=round(p.maxHp*p.damageCapPct);
+    if(amount>cap){amount=cap;label+=' → урон ограничен до '+cap;}
+  }
+
+  const res=dmgWithShield(p,amount);
+  let text=label+' → нанесено '+res.total+' урона';
+  if(res.absorbed>0) text+=' (щит поглотил '+res.absorbed+')';
+  lines.push(text);
+
+  if(p.hp<=0&&p.resurrectThisTurn){
+    p.hp=1;p.resurrectThisTurn=false;
+    lines.push('✨ Воскрешение: Трикстер восстал с 1 ХП');
+  }
+  return res.total;
 }
 
-// Змеиный оскал: при любой атаке 20% шанс наложить яд (не стакается)
-// Возвращает строку-уведомление или null
+// ===== ПАССИВНЫЕ МЕХАНИКИ =====
 function tryPoison(){
   if(state.poisonActive) return null;
   if(Math.random()<0.20){
     state.poisonActive=true;
-    state.poisonPerTurn=state.player.poisonPerTurn;
-    return '🐍 Змеиный оскал сработал — яд '+state.poisonPerTurn+'/раунд';
+    state.poisonPerTurn=state.player.poisonBase;
+    return '🐍 Змеиный оскал: яд '+state.poisonPerTurn+' за раунд до конца боя';
   }
   return null;
 }
-
 function applyPoison(){
   if(!state.poisonActive||state.enemy.hp<=0) return 0;
-  return pureDmg(state.enemy, state.poisonPerTurn);
+  return pureDmg(state.enemy,state.poisonPerTurn);
 }
-
-function prepareBlock(){
-  const sk=getActiveSkills();
-  state.enemy.blockReady = sk.block && Math.random()<0.30;
-  state.enemy.defenseReady = sk.defense1 && Math.random()<0.30;
-  state.enemy.reflexesReady = sk.reflexes && Math.random()<0.35;
-}
-
 function enemyBoneGather(){
   const sk=getActiveSkills();
-  if(!sk.boneGather) return null;
-  if(state.enemy.hp<=0||state.enemy.hp>=state.enemy.maxHp) return null;
-  if(Math.random()>=0.25) return null;
-  const heal=round((state.enemy.maxHp-state.enemy.hp)*0.20);
-  const b=state.enemy.hp;
-  state.enemy.hp=Math.min(state.enemy.maxHp,state.enemy.hp+heal);
-  const actual=state.enemy.hp-b;
-  return actual>0 ? '💀 Сбор костей: +'+actual+' ХП' : null;
+  if(!sk.boneGather||state.enemy.hp<=0||state.enemy.hp>=state.enemy.maxHp||Math.random()>=0.25) return null;
+  const before=state.enemy.hp;
+  state.enemy.hp=Math.min(state.enemy.maxHp,state.enemy.hp+round((state.enemy.maxHp-state.enemy.hp)*0.20));
+  return '💀 Сбор костей: +'+(state.enemy.hp-before)+' ХП';
 }
 
-// Возвращает объект {lines:[], dealt:N}
+function listStealableSkills(){
+  return ENEMY_SKILLS.filter(skill=>{
+    const cb=document.getElementById('esk_'+skill.id);
+    return cb?cb.checked:skill.defaultOn;
+  });
+}
+function tryStealSkill(lines){
+  if(state.illusionActive||state.stolenSkill||state.enemy.hp<=0||Math.random()>=0.10) return;
+  const pool=listStealableSkills();
+  if(!pool.length) return;
+  const skill=pool[Math.floor(Math.random()*pool.length)];
+  state.stolenSkill={id:skill.id,name:skill.name,turns:2};
+  lines.push('🎭 Бог обмана: украдено умение «'+skill.name.replace(/^\S+\s*/, '')+'» на 2 хода. Древоебатель временно не может его использовать.');
+}
+
+// ===== ХОД Древоебателя =====
 function enemyTurn(){
-  const lines=[];
+  const lines=[];let dealt=0;
   const sk=getActiveSkills();
-  if(state.enemy.hp<=0) return {lines,dealt:0};
+  if(state.enemy.hp<=0) return {lines,dealt};
 
-  // Стан — пропускает ход ПОЛНОСТЬЮ (до сбора костей)
-  if(state.enemy.stun>0){
-    state.enemy.stun--;
-    lines.push('🪨 Некродион: пропускает ход (оглушение)');
-    return {lines,dealt:0};
-  }
-
-  // Слепота — 50% промах
+  if(state.enemy.stun>0){state.enemy.stun--;lines.push('🪨 Древоебатель пропускает ход (оглушение)');return {lines,dealt};}
   if(state.enemy.blind>0){
     state.enemy.blind--;
-    if(Math.random()<0.5){
-      lines.push('👁 Некродион: промахнулся (ослепление)');
-      return {lines,dealt:0};
-    }
+    if(Math.random()<0.50){lines.push('👁 Древоебатель промахнулся (ослепление)');return {lines,dealt};}
   }
 
-  // 🎶 Лечение: если меньше 50% ХП, с шансом 40%
-  if(sk.healing && state.enemy.hp<state.enemy.maxHp*0.5 && (state.enemy.healCooldown||0)<=0 && Math.random()<0.40){
-    const h=round(state.enemy.maxHp/3);
-    const b=state.enemy.hp;
-    state.enemy.hp=Math.min(state.enemy.maxHp,state.enemy.hp+h);
+  if(sk.healing&&state.enemy.hp<state.enemy.maxHp*0.5&&(state.enemy.healCooldown||0)<=0&&Math.random()<0.40){
+    const before=state.enemy.hp;
+    state.enemy.hp=Math.min(state.enemy.maxHp,state.enemy.hp+round(state.enemy.maxHp/3));
     state.enemy.healCooldown=3;
-    lines.push('🎶 Лечение: Некродион восстановил '+(state.enemy.hp-b)+' ХП');
-    // После лечения атакует обычно
-  } else if((state.enemy.healCooldown||0)>0){ state.enemy.healCooldown--; }
+    lines.push('🎶 Лечение: Древоебатель восстановил '+(state.enemy.hp-before)+' ХП');
+  } else if((state.enemy.healCooldown||0)>0) state.enemy.healCooldown--;
 
-  // Сбор костей
-  const bone=enemyBoneGather();
-  if(bone) lines.push(bone);
-  if(state.enemy.hp<=0) return {lines,dealt:0};
+  const bone=enemyBoneGather();if(bone)lines.push(bone);
+  if(state.enemy.hp<=0)return {lines,dealt};
 
-  // ⚜ Громовое копьё — ПРИОРИТЕТНЕЕ, с шансом 20%
-  if(sk.thunderSpear && Math.random()<0.20){
-    const spearDmg=round((state.enemy.attackMax)*3);
-    lines.push('⚜ Громовое копьё! Некродион бросает заряженное копьё (×3 от макс. атаки)');
-    // Игнорирует уклонение и отражение
-    const p=state.player;
-    let raw=spearDmg;
-    if(p.doubleIncomingNext){ raw=round(raw*2); p.doubleIncomingNext=false; }
-    const r=dmgWithShield(p,raw);
-    lines.push('  ⚡ Нанесено '+r.total+' урона (игнорирует иллюзии)');
-    // Сбрасываем dodge
-    p.dodgeNext=false; p.dodgeFromShadow=false;
-    return {lines,dealt:r.total};
+  if(sk.thunderSpear&&Math.random()<0.20){
+    dealt+=resolveIncomingDamage(state.enemy.attackMax*3,lines,'⚜ Громовое копьё','skill',{ignoreIllusion:true});
+    return {lines,dealt};
   }
-
-  // 🕸 Паучьи споры — с шансом 15%
-  if(sk.spiderSpores && Math.random()<0.15){
-    lines.push('🕸 Паучьи споры! Паучки сковывают ваши движения — оглушение!');
-    state.player.st=0; // обнуляем стамину как оглушение
-    // Атакует дважды
-    let totalDealt=0;
-    for(let i=0;i<2;i++){
-      const raw2=rnd(state.enemy.attackMin, state.enemy.attackMax);
-      const r2=dmgWithShield(state.player,raw2);
-      if(r2.total>0) lines.push('  🕸 Удар '+(i+1)+': '+r2.total+' урона');
-      totalDealt+=r2.total;
-    }
-    return {lines,dealt:totalDealt};
+  if(sk.spiderSpores&&Math.random()<0.15){
+    lines.push('🕸 Паучьи споры: двойная атака');
+    for(let i=1;i<=2;i++) dealt+=resolveIncomingDamage(rnd(state.enemy.attackMin,state.enemy.attackMax),lines,'  🕸 Удар '+i,'skill');
+    return {lines,dealt};
   }
-
-  // Уклонение трикстера (Бесчестный обмен / эффект луча)
-  if(state.player.dodgeNext){
-    state.player.dodgeNext=false;
-    const isShadow=state.player.dodgeFromShadow;
-    state.player.dodgeFromShadow=false;
-    if(isShadow){
-      const isHumiliate=sk.humiliate && Math.random()<0.20;
-      const raw=round(rnd(state.enemy.attackMin,state.enemy.attackMax)*(isHumiliate?3:1));
-      pureDmg(state.enemy, raw);
-      lines.push('💨 Бесчестный обмен: атака прошла сквозь иллюзию'+(isHumiliate?' (×3 Унижение)':''));
-      lines.push('  ↩️ '+raw+' урона вернулось обратно Некродиону');
-    } else {
-      lines.push('💨 Некродион: атака прошла сквозь иллюзию — промах');
-    }
-    return {lines,dealt:0};
+  if(sk.fleshAbsorb&&Math.random()<0.18){
+    const raw=state.enemy.attackMax*(1+Math.random()*2);
+    const d=resolveIncomingDamage(raw,lines,'🩸 Поглощение плоти','skill');
+    const before=state.enemy.hp;state.enemy.hp=Math.min(state.enemy.maxHp,state.enemy.hp+d);
+    if(d>0)lines.push('  🩸 Древоебатель восстановил '+(state.enemy.hp-before)+' ХП');
+    dealt+=d;return {lines,dealt};
   }
+  if(sk.whirlwind&&Math.random()<0.20){dealt+=resolveIncomingDamage(rnd(50,350),lines,'💨 Волчок','skill');return {lines,dealt};}
+  if(sk.residual2&&Math.random()<0.20){dealt+=resolveIncomingDamage(state.enemy.attackMax*(0.5+Math.random()*2),lines,'🗡 Остаточное мастерство v2','skill');return {lines,dealt};}
+  if(sk.critCrit1&&Math.random()<0.20){dealt+=resolveIncomingDamage(state.player.hp*0.70,lines,'💥 Критический крит 1','skill');return {lines,dealt};}
 
-  // 🩸 Поглощение плоти — с шансом 18%
-  if(sk.fleshAbsorb && Math.random()<0.18){
-    const pct=(1.0+Math.random()*2.0); // 100–300%
-    const raw=round(state.enemy.attackMax*pct);
-    const r=dmgWithShield(state.player, raw);
-    const heal=round(r.total);
-    state.enemy.hp=Math.min(state.enemy.maxHp, state.enemy.hp+heal);
-    lines.push('🩸 Поглощение плоти! ('+Math.round(pct*100)+'% от макс. атаки) → '+r.total+' урона → Некродион восстановил '+heal+' ХП');
-    return {lines, dealt:r.total};
-  }
-
-  // 💨 Волчок — с шансом 20%
-  if(sk.whirlwind && Math.random()<0.20){
-    const raw=rnd(50,350);
-    const r=dmgWithShield(state.player, raw);
-    lines.push('💨 Волчок! Некродион закручивается и налетает → '+r.total+' урона');
-    return {lines,dealt:r.total};
-  }
-
-  // 🗡️ Остаточное мастерство v2 — с шансом 20%
-  if(sk.residual2 && Math.random()<0.20){
-    const pct2=(0.5+Math.random()*2.0); // 50–250%
-    const raw=round(state.enemy.attackMax*pct2);
-    const r=dmgWithShield(state.player,raw);
-    lines.push('🗡️ Остаточное мастерство v2 ('+Math.round(pct2*100)+'%) → '+r.total+' урона');
-    return {lines,dealt:r.total};
-  }
-
-  // 💥 Критический крит 1 — с шансом 20%
-  if(sk.critCrit1 && Math.random()<0.20){
-    const dmg=round(state.player.hp*0.70);
-    const r=dmgWithShield(state.player,dmg);
-    lines.push('💥 Критический крит 1! Снимает 70% ХП игрока → '+r.total+' урона');
-    return {lines,dealt:r.total};
-  }
-
-  // Обычная атака
-  const isHumiliate=sk.humiliate && Math.random()<0.20;
-  let raw=round(rnd(state.enemy.attackMin, state.enemy.attackMax)*(isHumiliate?3:1));
-  if(state.player.doubleIncomingNext){ raw=round(raw*2); state.player.doubleIncomingNext=false; }
-
-  let attackLabel = isHumiliate ? '👊 Некродион: Унижение (×3)' : '🗡 Некродион: атакует';
-
-  // Снижение урона
-  if(state.player.oneHitReduction>0){
-    const cut=round(raw*state.player.oneHitReduction);
-    raw=Math.max(0,raw-cut);
-    attackLabel+=' → −'+cut+' (снижение урона)';
-    state.player.oneHitReduction=0;
-  }
-
-  // Отражение
-  if(state.player.reflectNext){
-    state.player.reflectNext=false;
-    pureDmg(state.enemy,raw);
-    lines.push(attackLabel+' → ↩️ отражено ('+raw+') обратно Некродиону');
-    return {lines,dealt:0};
-  }
-
-  // Клон (25% шанс принять урон)
-  const aliveClones = state.clones.filter(c=>c.hp>0);
-  if(aliveClones.length>0 && Math.random()<0.25){
-    const clone = aliveClones[Math.floor(Math.random()*aliveClones.length)];
-    const d = Math.min(clone.hp, Math.max(0, round(raw)));
-    clone.hp -= d;
-    const idx = state.clones.indexOf(clone)+1;
-    let cloneLine = attackLabel+' → 🪬 Клон '+idx+' принял '+d+' урона';
-    if(clone.hp<=0){
-      state.clones = state.clones.filter(c=>c!==clone);
-      cloneLine += ' (клон уничтожен)';
-    } else {
-      cloneLine += ' (клон '+idx+': '+clone.hp+'/'+clone.maxHp+')';
-    }
-    lines.push(cloneLine);
-    return {lines,dealt:0};
-  }
-
-  // Урон игроку
-  const res=dmgWithShield(state.player,raw);
-  let dmgLine=attackLabel+' → нанесено '+res.total+' урона';
-  if(res.absorbed>0) dmgLine+=' (щит поглотил '+res.absorbed+')';
-  lines.push(dmgLine);
-  return {lines,dealt:res.total};
+  const humiliate=sk.humiliate&&Math.random()<0.20;
+  const raw=rnd(state.enemy.attackMin,state.enemy.attackMax)*(humiliate?3:1);
+  dealt+=resolveIncomingDamage(raw,lines,humiliate?'👊 Унижение (×3)':'🗡 Древоебатель атакует','basic');
+  return {lines,dealt};
 }
 
-// ===== АТАКИ ИГРОКА (возвращают {line, dmg, effects[], poisonLine}) =====
+// ===== АТАКИ ТРИКСТЕРА =====
+function consumeAttackBuffs(){
+  const b={ignoreArmorPct:state.player.nextAttackIgnoreArmorPct||0,damageMult:state.player.nextAttackDamageMult||1};
+  state.player.nextAttackIgnoreArmorPct=0;state.player.nextAttackDamageMult=1;
+  return b;
+}
+function applyVampirism(damage,lines){
+  if(state.player.vampTurns>0&&damage>0){
+    healPlayer(state,round(damage*state.player.vampPct),lines,'  🩸 Вампиризм +');
+    state.player.vampTurns--;
+  }
+}
 
 function doBurstAttack(){
-  prepareBlock();
+  prepareEnemyDefense();
   const sk=getActiveSkills();
   const isMag=Math.random()<0.50;
-  const typeLabel=isMag?'✨ маг.':'🗡 физ.';
-
-  let rawDmg=rnd(0,round(state.player.burstMax));
+  const type=isMag?'magical':'physical';
+  const typeLabel=isMag?'✨ магический':'🗡 физический';
+  const baseAttack=isMag?state.player.magAtk:state.player.physAtk;
+  const multiplier=Math.random()*state.player.burstMultiplier;
+  const buffs=consumeAttackBuffs();
+  let raw=baseAttack*multiplier*buffs.damageMult;
   const isCrit=Math.random()<state.player.critChance;
-  if(isCrit) rawDmg=round(rawDmg*state.player.critMultiplier);
+  if(isCrit)raw*=state.player.critMultiplier;
 
-  const effLines=[];
+  const effect=Math.random()<state.player.godProc?pickEffect():null;
+  const effectLines=[];
+  const effectIgnore=effect&&effect.armorIgnorePct?effect.armorIgnorePct:0;
+  const ignoreArmorPct=Math.max(effectIgnore,buffs.ignoreArmorPct);
+  let missed=false;
 
-  // Коварность — бросок делается ВСЕГДА (даже при парировании, блоке, уклонении)
-  let kovalGodProcFired=false;
-  function tryGodProc(){
-    if(kovalGodProcFired) return;
-    kovalGodProcFired=true;
-    if(Math.random()<state.player.godProc){
-      const eff=pickEffect();
-      effLines.push('  🎭 '+eff.desc+' (луч не попал, но трюк сработал!)');
-      eff.apply(state,effLines);
+  if(sk.bestFencer&&Math.random()<0.90){
+    missed=true;
+    effectLines.push('🤺 Лучшая фехтовальщица: луч парирован');
+  } else if(sk.parry&&Math.random()<0.25){
+    missed=true;
+    effectLines.push('🏃 Парирование: луч парирован');
+  }
+
+  let result={total:0,absorbed:0,armorAbsorbed:0,blocked:false};
+  if(!missed)result=dealDamageToEnemy(raw,type,effectLines,{ignoreArmorPct});
+  if(result.blocked)missed=true;
+
+  state.lastBurstDamage=result.total;
+  state.lastBurstType=type;
+
+  let line='[ ⚜️ ] Мистический луч ('+typeLabel+', ×'+multiplier.toFixed(2)+')';
+  if(isCrit)line+=' 💫 КРИТ';
+  if(missed)line+=' → 0 урона';
+  else {
+    line+=' → '+result.total+' урона';
+    if(result.armorAbsorbed>0)line+=' (броня поглотила '+result.armorAbsorbed+')';
+    if(result.absorbed>0)line+=' (щит поглотил '+result.absorbed+')';
+  }
+
+  if(effect){
+    effectLines.push('  🎭 '+effect.desc+(missed?' — луч не попал, но эффект активирован':'')+' ['+effect.name+']');
+    effect.apply(state,effectLines,{missed,type});
+  }
+  applyVampirism(result.total,effectLines);
+  const poisonLine=tryPoison();
+  return {line,effLines:effectLines,poisonLine,dmg:result.total};
+}
+
+function doBasicAttack(type){
+  prepareEnemyDefense();
+  const sk=getActiveSkills();
+  const isMag=type==='magical';
+  const label=isMag?'✨ Маг. атака':'🗡 Физ. атака';
+  const buffs=consumeAttackBuffs();
+  let raw=(isMag?state.player.magAtk:state.player.physAtk)*buffs.damageMult;
+  const isCrit=Math.random()<state.player.critChance;
+  if(isCrit)raw*=state.player.critMultiplier;
+  const lines=[];
+  if(sk.bestFencer&&Math.random()<0.90){
+    const poisonLine=tryPoison();
+    return {line:label+' → 🤺 ПАРИРОВАНО',effLines:lines,poisonLine,dmg:0};
+  }
+  if(sk.parry&&Math.random()<0.25){
+    const poisonLine=tryPoison();
+    return {line:label+' → 🏃 ПАРИРОВАНО',effLines:lines,poisonLine,dmg:0};
+  }
+  const r=dealDamageToEnemy(raw,type,lines,{ignoreArmorPct:buffs.ignoreArmorPct});
+  let line=label+(isCrit?' 💫 КРИТ':'')+' → '+r.total+' урона';
+  if(r.blocked)line=label+' → 🛡 заблокирована';
+  else {
+    if(r.armorAbsorbed>0)line+=' (броня поглотила '+r.armorAbsorbed+')';
+    if(r.absorbed>0)line+=' (щит поглотил '+r.absorbed+')';
+  }
+  applyVampirism(r.total,lines);
+  const poisonLine=tryPoison();
+  return {line,effLines:lines,poisonLine,dmg:r.total};
+}
+function doPhysAttack(){return doBasicAttack('physical');}
+function doMagAttack(){return doBasicAttack('magical');}
+
+function useStolenSkill(){
+  const skill=state.stolenSkill;
+  if(!skill)return {line:'Украденного умения нет',effLines:[],dmg:0};
+  const lines=[];let dmg=0;
+  const name=skill.name;
+  state.stolenSkill=null;
+
+  const strike=(raw,type='physical',ignoreArmorPct=0)=>{
+    prepareEnemyDefense();
+    const r=dealDamageToEnemy(raw,type,lines,{ignoreArmorPct});dmg+=r.total;return r.total;
+  };
+  switch(skill.id){
+    case 'boneGather': healPlayer(state,(state.player.maxHp-state.player.hp)*0.20,lines,'  💀 Сбор костей +');break;
+    case 'block': state.player.blockNext=true;lines.push('  🛡 Следующая атака полностью блокируется');break;
+    case 'suppress': state.enemy.blind=Math.max(state.enemy.blind,2);lines.push('  🧲 Рассудок врага подавлен: ослепление на 2 хода');break;
+    case 'humiliate': strike(state.player.physAtk*3);break;
+    case 'parry': state.player.parryNext=true;lines.push('  🏃 Следующая атака будет парирована');break;
+    case 'defense3': state.player.damageCapPct=0.50;state.player.damageCapTurns=2;lines.push('  🛡 Входящий удар ограничен 50% макс. ХП на 2 хода');break;
+    case 'ignoreArmor': state.player.nextAttackIgnoreArmorPct=1;lines.push('  🎯 Следующая атака полностью игнорирует броню');break;
+    case 'fleshAbsorb': {const d=strike(state.player.physAtk*(1+Math.random()*2));healPlayer(state,d,lines,'  🩸 Поглощение плоти +');break;}
+    case 'thunderSpear': strike(state.player.physAtk*3,'physical',1);break;
+    case 'whirlwind': strike(rnd(50,350));break;
+    case 'residual2': strike(state.player.physAtk*(0.5+Math.random()*2));break;
+    case 'reflexes': state.player.oneHitReduction=Math.max(state.player.oneHitReduction,0.70);lines.push('  🛡 Следующий входящий урон снижен на 70%');break;
+    case 'healing': healPlayer(state,state.player.maxHp/3,lines,'  🎶 Лечение +');break;
+    case 'spiderSpores': strike(state.player.physAtk);if(state.enemy.hp>0)strike(state.player.physAtk);state.enemy.stun=Math.max(state.enemy.stun,1);lines.push('  🕸 Враг оглушён на 1 ход');break;
+    case 'dirtyStart': state.enemy.stun=Math.max(state.enemy.stun,1);lines.push('  🧨 Древоебатель теряет следующий ход');break;
+    case 'field2': state.enemy.blind=Math.max(state.enemy.blind,1);lines.push('  🧲 Поле исказило действия врага: ослепление на 1 ход');break;
+    case 'defense1': state.player.oneHitReduction=Math.max(state.player.oneHitReduction,0.70);lines.push('  🛡 Следующий входящий урон снижен на 70%');break;
+    case 'critCrit1': dmg+=pureDmg(state.enemy,state.enemy.hp*0.70);lines.push('  💥 Снято 70% текущего ХП врага');break;
+    case 'bestFencer': state.player.parryNext=true;lines.push('  🤺 Следующая атака будет парирована');break;
+    default: lines.push('  Умение активировано, но не имеет отдельной механики в одиночном бою.');
+  }
+  return {line:'🎭 Украденное умение: '+name,effLines:lines,dmg};
+}
+
+// ===== ЗАВЕРШЕНИЕ ХОДА =====
+function updateTimedEffects(parts,usedShadow,usedStolen){
+  if(!usedShadow&&state.cds.shadow>0)state.cds.shadow--;
+  state.dishonestExchangeActive=false;
+
+  if(state.player.regenTurns>0){
+    const before=state.player.hp;
+    state.player.hp=Math.min(state.player.maxHp,state.player.hp+round(state.player.maxHp*state.player.regenPct));
+    state.player.regenTurns--;
+    parts.push('💚 Регенерация: +'+(state.player.hp-before)+' ХП');
+  }
+  if(state.player.timedShieldTurns>0){
+    state.player.timedShieldTurns--;
+    if(state.player.timedShieldTurns===0&&state.player.timedShieldAmount>0){
+      state.player.shield=Math.max(0,state.player.shield-state.player.timedShieldAmount);
+      parts.push('🛡 Время мощного щита истекло');
+      state.player.timedShieldAmount=0;
     }
   }
+  if(state.player.ignoreSkillTurns>0)state.player.ignoreSkillTurns--;
+  if(state.player.ignoreBasicTurns>0)state.player.ignoreBasicTurns--;
+  if(state.player.damageCapTurns>0){state.player.damageCapTurns--;if(state.player.damageCapTurns===0)state.player.damageCapPct=0;}
+  state.player.resurrectThisTurn=false;
 
-  // 🤺 Лучшая фехтовальщица (90% шанс)
-  if(sk.bestFencer && Math.random()<0.90){
-    const costPar=rnd(10,50); state.player.mp=Math.max(0,state.player.mp-costPar);
-    effLines.push('🤺 Лучшая фехтовальщица! Луч парирован с мастерством — МП −'+costPar);
-    tryGodProc();
-    const poisonLine=tryPoison();
-    return {line:'[ ⚜️ ] Мистический луч ('+typeLabel+') → 🤺 ПАРИРОВАНО (фехтовальщица)', effLines, poisonLine, dmg:0};
+  if(state.stolenSkill&&!usedStolen){
+    state.stolenSkill.turns--;
+    if(state.stolenSkill.turns<=0){parts.push('🎭 Украденное умение исчезло');state.stolenSkill=null;}
   }
-
-  // 🏃 Парирование
-  if(sk.parry && Math.random()<0.25){
-    state.cds.shadow=Math.max(state.cds.shadow, 3); // луч не на откате, но условно тратим ману
-    const costPar=rnd(10,50); state.player.mp=Math.max(0,state.player.mp-costPar);
-    effLines.push('🏃 Парирование! Некродион парировал луч — МП −'+costPar+' (откат)');
-    tryGodProc();
-    const poisonLine=tryPoison();
-    return {line:'[ ⚜️ ] Мистический луч ('+typeLabel+') → 🏃 ПАРИРОВАНО', effLines, poisonLine, dmg:0};
-  }
-
-  const ignoreArmor=sk.ignoreArmor;
-  let blocked=false;
-  let defAbsorbed=0;
-  
-  if(state.enemy.blockReady){
-    state.enemy.blockReady=false; blocked=true; rawDmg=0;
-  } else if(!ignoreArmor){
-    const def=isMag?state.enemy.magDef:state.enemy.physDef;
-    defAbsorbed=Math.min(rawDmg,def);
-    rawDmg=Math.max(0,rawDmg-def);
-  }
-
-  // 🛡️ Запредельные рефлексы / Защита / Защита 3
-  if(!blocked){
-    if(state.enemy.reflexesReady){ const cut=round(rawDmg*0.70); rawDmg=Math.max(0,rawDmg-cut); effLines.push('  🛡️ Запредельные рефлексы: −'+cut+' урона'); state.enemy.reflexesReady=false; }
-    else if(state.enemy.defenseReady){ const cut=round(rawDmg*0.70); rawDmg=Math.max(0,rawDmg-cut); effLines.push('  🛡️ Защита: −'+cut+' урона'); state.enemy.defenseReady=false; }
-    if(sk.defense3){ const cap=round(state.enemy.maxHp*0.50); if(rawDmg>cap){ effLines.push('  🛡️ Защита 3: урон ограничен до '+cap); rawDmg=cap; } }
-  }
-
-  const res=dmgWithShield(state.enemy,rawDmg);
-  state.lastBurstDamage=res.total;
-
-  let line='[ ⚜️ ] Мистический луч ('+typeLabel+')';
-  if(isCrit) line+=' 💫 КРИТ';
-  if(blocked){
-    line+=' → 🛡 заблокирован (0 урона)';
-    tryGodProc(); // блок — луч не попал, но эффект может сработать
-  } else {
-    line+=' → нанесено '+res.total+' урона';
-    if(ignoreArmor) line+=' (игнор брони)';
-    else if(defAbsorbed>0) line+=' (броня поглотила '+defAbsorbed+')';
-    if(res.absorbed>0) line+=' (щит врага поглотил '+res.absorbed+')';
-  }
-
-  // Эффект Коварности (если ещё не сработал выше)
-  tryGodProc();
-
-  // Вампиризм
-  if(state.player.vampTurns>0&&res.total>0){
-    const h=round(res.total*state.player.vampPct);
-    healPlayer(state,h,effLines,'  🩸 Вампиризм: +');
-    state.player.vampTurns--;
-  }
-
-  const poisonLine=tryPoison();
-  return {line, effLines, poisonLine, dmg:res.total};
-}
-
-function doPhysAttack(){
-  prepareBlock();
-  const sk=getActiveSkills();
-  let rawDmg=round(state.player.physAtk);
-  const isCrit=Math.random()<state.player.critChance;
-  if(isCrit) rawDmg=round(rawDmg*state.player.critMultiplier);
-  const effLines=[];
-
-  // 🤺 Лучшая фехтовальщица (90% шанс)
-  if(sk.bestFencer && Math.random()<0.90){
-    effLines.push('🤺 Лучшая фехтовальщица! Физ. атака парирована — стамина обнулена');
-    state.player.st=0;
-    const poisonLine=tryPoison();
-    return {line:'🗡 Физ. атака → 🤺 ПАРИРОВАНО (фехтовальщица)', effLines, poisonLine, dmg:0};
-  }
-
-  // Парирование
-  if(sk.parry && Math.random()<0.25){
-    effLines.push('🏃 Парирование! Физ. атака парирована — стамина обнулена');
-    state.player.st=0;
-    const poisonLine=tryPoison();
-    return {line:'🗡 Физ. атака → 🏃 ПАРИРОВАНО', effLines, poisonLine, dmg:0};
-  }
-
-  let blocked=false; let defAbsorbed=0;
-  if(state.enemy.blockReady){ state.enemy.blockReady=false; blocked=true; rawDmg=0; }
-  else if(!sk.ignoreArmor){ defAbsorbed=Math.min(rawDmg,state.enemy.physDef); rawDmg=Math.max(0,rawDmg-state.enemy.physDef); }
-
-  if(!blocked){
-    if(state.enemy.reflexesReady){ const cut=round(rawDmg*0.70); rawDmg=Math.max(0,rawDmg-cut); effLines.push('  🛡️ Запредельные рефлексы: −'+cut+' урона'); state.enemy.reflexesReady=false; }
-    else if(state.enemy.defenseReady){ const cut=round(rawDmg*0.70); rawDmg=Math.max(0,rawDmg-cut); effLines.push('  🛡️ Защита: −'+cut+' урона'); state.enemy.defenseReady=false; }
-    if(sk.defense3){ const cap=round(state.enemy.maxHp*0.50); if(rawDmg>cap){ effLines.push('  🛡️ Защита 3: урон ограничен'); rawDmg=cap; } }
-  }
-
-  const res=dmgWithShield(state.enemy,rawDmg);
-  let line='🗡 Физ. атака';
-  if(isCrit) line+=' 💫 КРИТ';
-  if(blocked){ line+=' → 🛡 заблокирована (0 урона)'; }
-  else {
-    line+=' → нанесено '+res.total+' урона';
-    if(sk.ignoreArmor) line+=' (игнор брони)';
-    else if(defAbsorbed>0) line+=' (броня поглотила '+defAbsorbed+')';
-    if(res.absorbed>0) line+=' (щит врага поглотил '+res.absorbed+')';
-  }
-
-  if(state.player.vampTurns>0&&res.total>0){
-    const h=round(res.total*state.player.vampPct);
-    healPlayer(state,h,effLines,'  🩸 Вампиризм: +');
-    state.player.vampTurns--;
-  }
-  const poisonLine=tryPoison();
-  return {line, effLines, poisonLine, dmg:res.total};
-}
-
-function doMagAttack(){
-  prepareBlock();
-  const sk=getActiveSkills();
-  let rawDmg=round(state.player.magAtk);
-  const isCrit=Math.random()<state.player.critChance;
-  if(isCrit) rawDmg=round(rawDmg*state.player.critMultiplier);
-  const effLines=[];
-
-  // 🤺 Лучшая фехтовальщица (90% шанс)
-  if(sk.bestFencer && Math.random()<0.90){
-    effLines.push('🤺 Лучшая фехтовальщица! Маг. атака парирована — мана потрачена впустую');
-    state.player.mp=Math.max(0,state.player.mp-30);
-    const poisonLine=tryPoison();
-    return {line:'✨ Маг. атака → 🤺 ПАРИРОВАНО (фехтовальщица)', effLines, poisonLine, dmg:0};
-  }
-
-  // Парирование
-  if(sk.parry && Math.random()<0.25){
-    effLines.push('🏃 Парирование! Маг. атака парирована — мана потрачена впустую');
-    state.player.mp=Math.max(0,state.player.mp-30);
-    const poisonLine=tryPoison();
-    return {line:'✨ Маг. атака → 🏃 ПАРИРОВАНО', effLines, poisonLine, dmg:0};
-  }
-
-  let blocked=false; let defAbsorbed=0;
-  if(state.enemy.blockReady){ state.enemy.blockReady=false; blocked=true; rawDmg=0; }
-  else if(!sk.ignoreArmor){ defAbsorbed=Math.min(rawDmg,state.enemy.magDef); rawDmg=Math.max(0,rawDmg-state.enemy.magDef); }
-
-  if(!blocked){
-    if(state.enemy.reflexesReady){ const cut=round(rawDmg*0.70); rawDmg=Math.max(0,rawDmg-cut); effLines.push('  🛡️ Запредельные рефлексы: −'+cut+' урона'); state.enemy.reflexesReady=false; }
-    else if(state.enemy.defenseReady){ const cut=round(rawDmg*0.70); rawDmg=Math.max(0,rawDmg-cut); effLines.push('  🛡️ Защита: −'+cut+' урона'); state.enemy.defenseReady=false; }
-    if(sk.defense3){ const cap=round(state.enemy.maxHp*0.50); if(rawDmg>cap){ effLines.push('  🛡️ Защита 3: урон ограничен'); rawDmg=cap; } }
-  }
-
-  const res=dmgWithShield(state.enemy,rawDmg);
-  let line='✨ Маг. атака';
-  if(isCrit) line+=' 💫 КРИТ';
-  if(blocked){ line+=' → 🛡 заблокирована (0 урона)'; }
-  else {
-    line+=' → нанесено '+res.total+' урона';
-    if(sk.ignoreArmor) line+=' (игнор брони)';
-    else if(defAbsorbed>0) line+=' (маг. защита поглотила '+defAbsorbed+')';
-    if(res.absorbed>0) line+=' (щит врага поглотил '+res.absorbed+')';
-  }
-
-  if(state.player.vampTurns>0&&res.total>0){
-    const h=round(res.total*state.player.vampPct);
-    healPlayer(state,h,effLines,'  🩸 Вампиризм: +');
-    state.player.vampTurns--;
-  }
-  const poisonLine=tryPoison();
-  return {line, effLines, poisonLine, dmg:res.total};
 }
 
 // ===== ОСНОВНОЙ ЦИКЛ =====
 function performRound(kind){
-  if(!state.battleStarted||state.battleOver||!state.playerTurn) return null;
+  if(!state.battleStarted||state.battleOver||!state.playerTurn)return null;
+  let playerDmg=0,enemyDmg=0,poisonDmg=0;
+  const parts=['════ Раунд '+state.round+' ════'];
+  let usedShadow=false,usedStolen=false;
 
-  let playerDmg=0, enemyDmg=0, poisonDmg=0;
-  // Строим одно сообщение раунда
-  const parts=[];
-  parts.push('════ Раунд '+state.round+' ════');
-
-  // --- ХОД ИГРОКА ---
   if(kind==='burst'){
-    const cost=rnd(10,50);
-    if(state.player.mp<cost){
-      appendLogs(['❌ Не хватает маны для луча (нужно '+cost+', есть '+round(state.player.mp)+').']);
-      if(!state.isSimulating) render(); return null;
-    }
+    const cost=rnd(1,50);
+    if(state.player.mp<cost){appendLogs(['❌ Для луча выпала стоимость '+cost+' МП, доступно '+round(state.player.mp)+'.']);if(!state.isSimulating)render();return null;}
     state.player.mp-=cost;
-    const r=doBurstAttack();
-    parts.push('💙 −'+cost+' МП  |  '+r.line);
-    r.effLines.forEach(l=>parts.push(l));
-    if(r.poisonLine) parts.push('  '+r.poisonLine);
-    playerDmg=r.dmg;
-  }
-  else if(kind==='shadow'){
-    if(state.cds.shadow>0){ appendLogs(['❌ Бесчестный обмен на откате ('+state.cds.shadow+' ход).']); if(!state.isSimulating) render(); return null; }
-    if(state.player.mp<50){ appendLogs(['❌ Нет маны для обмена (нужно 50).']); if(!state.isSimulating) render(); return null; }
-    state.player.mp-=50;
-    state.player.dodgeNext=true;
-    state.player.dodgeFromShadow=true;
-    state.cds.shadow=5;
-    parts.push('💙 −50 МП  |  [ ⚜️ ] Бесчестный обмен — иллюзия создана');
-  }
-  else if(kind==='physAttack'){
-    const r=doPhysAttack();
-    parts.push(r.line);
-    r.effLines.forEach(l=>parts.push(l));
-    if(r.poisonLine) parts.push('  '+r.poisonLine);
-    playerDmg=r.dmg;
-  }
-  else if(kind==='magAttack'){
-    const r=doMagAttack();
-    parts.push(r.line);
-    r.effLines.forEach(l=>parts.push(l));
-    if(r.poisonLine) parts.push('  '+r.poisonLine);
-    playerDmg=r.dmg;
-  }
-  else if(kind==='hpPotion'){
-    if(state.player.hpPotions<=0){ appendLogs(['❌ Зелья ХП нет.']); if(!state.isSimulating) render(); return null; }
-    state.player.hpPotions--;
-    const b=state.player.hp;
-    const h=round(state.player.maxHp*0.35);
-    state.player.hp=Math.min(state.player.maxHp,state.player.hp+h);
-    parts.push('🧪 Зелье ХП: +'+(state.player.hp-b)+' ХП');
-  }
-  else if(kind==='mpPotion'){
-    if(state.player.mpPotions<=0){ appendLogs(['❌ Зелья МП нет.']); if(!state.isSimulating) render(); return null; }
-    state.player.mpPotions--;
-    const b=state.player.mp;
-    const h=round(state.player.maxMp*0.40);
-    state.player.mp=Math.min(state.player.maxMp,state.player.mp+h);
-    parts.push('🧪 Зелье МП: +'+(state.player.mp-b)+' МП');
+    const r=doBurstAttack();parts.push('💙 −'+cost+' МП | '+r.line);r.effLines.forEach(x=>parts.push(x));if(r.poisonLine)parts.push('  '+r.poisonLine);playerDmg=r.dmg;
+  } else if(kind==='shadow'){
+    if(state.cds.shadow>0){appendLogs(['❌ Бесчестный обмен на откате: '+state.cds.shadow+' хода.']);if(!state.isSimulating)render();return null;}
+    if(state.player.mp<100){appendLogs(['❌ Для Бесчестного обмена нужно 100 МП.']);if(!state.isSimulating)render();return null;}
+    state.player.mp-=100;state.cds.shadow=3;state.dishonestExchangeActive=true;usedShadow=true;
+    parts.push('💙 −100 МП | [ ⚜️ ] Бесчестный обмен: весь направленный в Трикстера урон до конца хода возвращается атакующему');
+    if(Math.random()<state.player.illusionChance){state.illusionActive=true;state.illusionFirstHit=true;parts.push('🪬 Создана иллюзия (шанс '+Math.round(state.player.illusionChance*100)+'%)');}
+    else parts.push('🪬 Иллюзия не создана');
+  } else if(kind==='physAttack'){
+    const r=doPhysAttack();parts.push(r.line);r.effLines.forEach(x=>parts.push(x));if(r.poisonLine)parts.push('  '+r.poisonLine);playerDmg=r.dmg;
+  } else if(kind==='magAttack'){
+    const r=doMagAttack();parts.push(r.line);r.effLines.forEach(x=>parts.push(x));if(r.poisonLine)parts.push('  '+r.poisonLine);playerDmg=r.dmg;
+  } else if(kind==='stolenSkill'){
+    if(!state.stolenSkill){appendLogs(['❌ Украденного умения нет.']);if(!state.isSimulating)render();return null;}
+    const r=useStolenSkill();usedStolen=true;parts.push(r.line);r.effLines.forEach(x=>parts.push(x));playerDmg=r.dmg;
   }
 
-  // --- ХОД ВРАГА ---
-  if(state.enemy.hp>0){
-    const et=enemyTurn();
-    et.lines.forEach(l=>parts.push(l));
-    enemyDmg=et.dealt;
-  }
+  if(state.enemy.hp>0){const et=enemyTurn();et.lines.forEach(x=>parts.push(x));enemyDmg=et.dealt;}
+  if(state.enemy.hp>0){poisonDmg=applyPoison();if(poisonDmg>0)parts.push('🐍 Яд: −'+poisonDmg+' ХП врагу');}
 
-  // --- ЯД ---
-  if(state.enemy.hp>0){
-    poisonDmg=applyPoison();
-    if(poisonDmg>0) parts.push('🐍 Яд: −'+poisonDmg+' ХП врагу');
-  }
+  updateTimedEffects(parts,usedShadow,usedStolen);
+  if(state.player.hp>0&&state.enemy.hp>0)tryStealSkill(parts);
 
-  // --- РЕГЕНЕРАЦИЯ ---
-  if(state.player.regenTurns>0){
-    const h=round(state.player.maxHp*state.player.regenPct);
-    healPlayer(state,h,[]);
-    state.player.regenTurns--;
-    parts.push('💚 Регенерация: +'+h+' ХП'+(state.player.regenTurns>0?' (осталось '+state.player.regenTurns+' хода)':''));
-  }
-
-  // --- ИТОГ СТРОКИ СОСТОЯНИЯ ---
-  const php=round(state.player.hp), pmhp=round(state.player.maxHp);
-  const ehp=round(state.enemy.hp),  emhp=round(state.enemy.maxHp);
   parts.push('');
-  const aliveStr = state.clones.filter(c=>c.hp>0).map((c,i)=>'🪬 Клон '+(i+1)+': '+c.hp+'/'+c.maxHp).join('  ');
-  parts.push('✦ Трикстер: '+php+'/'+pmhp+' ХП  |  МП: '+round(state.player.mp)+'/'+round(state.player.maxMp)+(aliveStr?' | '+aliveStr:''));
-  parts.push('✦ Некродион: '+ehp+'/'+emhp+' ХП');
+  parts.push('✦ Трикстер: '+round(state.player.hp)+'/'+round(state.player.maxHp)+' ХП | МП: '+round(state.player.mp)+'/'+round(state.player.maxMp)+(state.illusionActive?' | 🪬 Иллюзия активна':''));
+  parts.push('✦ Древоебатель: '+round(state.enemy.hp)+'/'+round(state.enemy.maxHp)+' ХП');
 
-  if(state.cds.shadow>0) state.cds.shadow--;
   state.round++;
-
-  // Бог обмана: 5% шанс создать ещё одну копию в бою (не более 2)
-  if(state.battleStarted && !state.battleOver){
-    const aliveCount = state.clones.filter(c=>c.hp>0).length;
-    if(aliveCount < 2 && Math.random()<0.05){
-      const maxHp = round(state.player.maxHp*0.50);
-      state.clones.push({hp:maxHp, maxHp});
-      parts.push('🎭 Бог обмана: в бою создана новая копия! (5% шанс) 🪬 Клон '+state.clones.length+': '+maxHp+'/'+maxHp+' ХП');
-    }
-  }
-
   appendLogs([parts.join('\n')]);
   checkEnd();
-  if(!state.isSimulating) render();
-  return {playerDamage:playerDmg, enemyDamage:enemyDmg, poisonDamage:poisonDmg, kind};
+  if(!state.isSimulating)render();
+  return {playerDamage:playerDmg,enemyDamage:enemyDmg,poisonDamage:poisonDmg,kind};
 }
 
 function startBattle(silent=false){
   readInputsToState(true);
   const sk=getActiveSkills();
-  state.round=1; state.battleStarted=true; state.battleOver=false; state.playerTurn=true;
+  state.round=1;state.battleStarted=true;state.battleOver=false;state.playerTurn=true;
   state.logs=['⚔️ Бой начался.'];
 
-  // Бог обмана: клон (шанс 25% + удача, кап 50%)
-  if(Math.random()<state.player.cloneChance){
-    const maxHp = round(state.player.maxHp*0.50);
-    state.clones.push({hp:maxHp, maxHp});
-    state.logs.push('🎭 Бог обмана! Создана копия (шанс принять урон: 25%).');
-    state.logs.push('🪬 Клон 1: '+maxHp+'/'+maxHp+' ХП.');
-  } else {
-    state.logs.push('🎭 Бог обмана: клон не создан (шанс был '+Math.round(state.player.cloneChance*100)+'%).');
-  }
+  state.player.luckPenalty=(sk.suppress?100:0)+(sk.field2?100:0);
+  state.player=buildDerived(state.player);
+  if(sk.suppress)state.logs.push('🧲 Подавление рассудка: −100 удачи.');
+  if(sk.field2)state.logs.push('🧲 Поле 2: ещё −100 удачи.');
+  state.logs.push('🍀 Итоговая удача: '+state.player.effLuck+'. Максимальный множитель луча: ×'+state.player.burstMultiplier.toFixed(3)+'.');
 
-  // 🧲 Подавление рассудка
-  if(sk.suppress){
-    state.logs.push('🧲 Подавление рассудка: удача снижена на 100. Итоговая удача: '+state.player.effLuck+'.');
-  }
-
-  // 🧲 Поле 2 — доп. снижение удачи на 100
-  if(sk.field2){
-    state.player.effLuck=Math.max(0, state.player.effLuck-100);
-    state.logs.push('🧲 Поле 2: ваша удача снижена ещё на 100! Итого: '+state.player.effLuck+'.');
-  }
-
-  // 🧨 Нечестное начало — обнуляет стамину или ману
   if(sk.dirtyStart){
-    if(Math.random()<0.5){ state.player.st=0; state.logs.push('🧨 Нечестное начало! Ваша стамина обнулена!'); }
-    else { state.player.mp=0; state.logs.push('🧨 Нечестное начало! Ваша мана обнулена!'); }
+    if(Math.random()<0.5){state.player.st=0;state.logs.push('🧨 Нечестное начало: стамина обнулена.');}
+    else{state.player.mp=0;state.logs.push('🧨 Нечестное начало: мана обнулена.');}
   }
 
-  // 50/50 кто ходит первым
   if(Math.random()<0.5){
     state.playerTurn=false;
     const parts=['════ Стартовый ход врага ════'];
-    const et=enemyTurn();
-    et.lines.forEach(l=>parts.push(l));
-    const pd=applyPoison();
-    if(pd>0) parts.push('🐍 Яд: −'+pd+' ХП врагу');
-    parts.push('');
-    parts.push('✦ Трикстер: '+round(state.player.hp)+'/'+round(state.player.maxHp)+' ХП');
-    parts.push('✦ Некродион: '+round(state.enemy.hp)+'/'+round(state.enemy.maxHp)+' ХП');
-    appendLogs([parts.join('\n')]); checkEnd();
-    if(!state.battleOver) state.playerTurn=true;
+    const et=enemyTurn();et.lines.forEach(x=>parts.push(x));
+    parts.push('');parts.push('✦ Трикстер: '+round(state.player.hp)+'/'+round(state.player.maxHp)+' ХП');parts.push('✦ Древоебатель: '+round(state.enemy.hp)+'/'+round(state.enemy.maxHp)+' ХП');
+    appendLogs([parts.join('\n')]);checkEnd();
+    if(!state.battleOver){state.playerTurn=true;const steal=[];tryStealSkill(steal);appendLogs(steal);}
   } else {
     state.logs.push('✨ Первый ход за Трикстером.');
+    const steal=[];tryStealSkill(steal);state.logs.push(...steal);
   }
-  if(!silent&&!state.isSimulating) render();
+  if(!silent&&!state.isSimulating)render();
 }
 
 function checkEnd(){
-  if(state.player.hp<=0&&state.enemy.hp<=0){ end('☠️ Ничья.'); }
-  else if(state.enemy.hp<=0){ end('🏆 Некродион повержен!'); }
-  else if(state.player.hp<=0){ end('💀 Трикстер пал.'); }
+  if(state.player.hp<=0&&state.enemy.hp<=0)end('☠️ Ничья.');
+  else if(state.enemy.hp<=0)end('🏆 Древоебатель повержен!');
+  else if(state.player.hp<=0)end('💀 Трикстер пал.');
 }
-function end(msg){ state.battleOver=true; state.playerTurn=false; appendLogs([msg]); }
-
-function appendLogs(arr){ if(state.isSimulating) return; state.logs=[...state.logs,...arr].slice(-300); }
+function end(msg){state.battleOver=true;state.playerTurn=false;appendLogs([msg]);}
+function appendLogs(arr){if(state.isSimulating||!arr||!arr.length)return;state.logs=[...state.logs,...arr].slice(-300);}
 
 function resetBattle(){
-  state.round=1; state.battleStarted=false; state.battleOver=false; state.playerTurn=false;
-  state.poisonActive=false; state.poisonPerTurn=0;
-  state.clones=[]; state.lastBurstDamage=0;
+  state.round=1;state.battleStarted=false;state.battleOver=false;state.playerTurn=false;
   state.logs=['Бой сброшен. Жми «Начало боя».'];
   state.sim={runs:0,avgCastDamage:0,avgEnemyDamage:0,wins:0,losses:0,avgTurns:0,avgPoison:0,avgPhys:0};
-  readInputsToState(true); render();
+  readInputsToState(true);render();
 }
 
 // ===== РЕНДЕР =====
 function render(){
   readInputsToState(false);
-  const p=state.player, en=state.enemy;
+  const p=state.player,en=state.enemy;
   const canAct=state.battleStarted&&!state.battleOver&&state.playerTurn;
 
   el('roundBadge').textContent='Раунд '+state.round;
   el('battleBadge').textContent=!state.battleStarted?'Бой не начат':(state.battleOver?'Бой завершён':(state.playerTurn?'Твой ход':'Ход врага'));
-  el('shadowCdBadge').textContent=state.cds.shadow>0?'Обмен: '+state.cds.shadow:'Бесчестный обмен: готов';
-  el('poisonBadge').textContent=state.poisonActive?('🐍 Яд: '+state.poisonPerTurn+'/раунд'):'🐍 Яд: нет';
-  const aliveClones = state.clones.filter(c=>c.hp>0);
-  el('cloneBadge').textContent = aliveClones.length===0 ? '🪬 Клон: нет' :
-    aliveClones.map((c,i)=>'🪬 Клон '+(i+1)+': '+c.hp+'/'+c.maxHp).join('  ');
+  el('shadowCdBadge').textContent=state.cds.shadow>0?'Бесчестный обмен: '+state.cds.shadow:'Бесчестный обмен: готов';
+  el('poisonBadge').textContent=state.poisonActive?'🐍 Яд: '+state.poisonPerTurn+'/раунд':'🐍 Яд: нет';
+  el('illusionBadge').textContent=state.illusionActive?'🪬 Иллюзия: активна':'🪬 Иллюзия: нет';
 
-  ['btnCast','btnShadow','btnHpPotion','btnMpPotion','btnPhysAttack','btnMagAttack'].forEach(id=>{ if(el(id)) el(id).disabled=!canAct; });
+  ['btnCast','btnShadow','btnPhysAttack','btnMagAttack'].forEach(id=>{if(el(id))el(id).disabled=!canAct;});
+  const stolenBtn=el('btnStolen');
+  if(state.stolenSkill){
+    stolenBtn.style.display='inline-flex';stolenBtn.disabled=!canAct;stolenBtn.textContent='🎭 '+state.stolenSkill.name+' ('+state.stolenSkill.turns+')';
+  } else {stolenBtn.style.display='none';stolenBtn.disabled=true;}
 
   el('calcPhys').textContent=Math.round(p.physAtk);
   el('calcMag').textContent=Math.round(p.magAtk);
   el('calcLuck').textContent=p.effLuck;
   el('calcBurstAvg').textContent=Math.round(p.burstMax);
   el('godProcBadge').textContent=Math.round(p.godProc*100)+'%';
-  el('cloneChanceBadge').textContent=Math.round(p.cloneChance*100)+'%';
+  el('illusionChanceBadge').textContent=Math.round(p.illusionChance*100)+'%';
   el('luckBadge').textContent=p.effLuck;
 
   el('playerState').innerHTML=[
@@ -1180,120 +959,101 @@ function render(){
     '┣ 💙 МП: '+Math.round(p.mp)+'/'+Math.round(p.maxMp)+' ('+pct(p.mp,p.maxMp)+'%)',
     '┣ 🤍 СТ: '+Math.round(p.st)+'/'+Math.round(p.maxSt)+' ('+pct(p.st,p.maxSt)+'%)',
     '┣ 🛡 Щит: '+Math.round(p.shield||0),
-    '┣ 🪬 Клон: '+(aliveClones.length===0?'нет':aliveClones.map((c,i)=>'['+(i+1)+'] '+c.hp+'/'+c.maxHp).join(' | ')),
+    '┣ 🪬 Иллюзия: '+(state.illusionActive?'активна':'нет'),
+    '┣ 🎭 Украдено: '+(state.stolenSkill?state.stolenSkill.name+' / '+state.stolenSkill.turns+' хода':'нет'),
     '┣ 🍀 Удача: '+p.effLuck,
-    '┣ 🧪 Зелья ХП/МП: '+p.hpPotions+'/'+p.mpPotions,
-    '┣ 🗡 Физ.атк: '+Math.round(p.physAtk),
-    '┗ ✨ Маг.атк: 0-'+Math.round(p.magAtk)+' | Луч: 0-'+Math.round(p.burstMax)
+    '┣ 🗡 Физ. атака: '+Math.round(p.physAtk),
+    '┣ ✨ Маг. атака: '+Math.round(p.magAtk),
+    '┗ ⚜️ Луч: Ф 0-'+Math.round(p.burstPhysMax)+' / М 0-'+Math.round(p.burstMagMax)+' | множитель ×'+p.burstMultiplier.toFixed(3)+' до крита'
   ].join('<br>');
 
   const efx=[];
-  if(en.stun>0) efx.push('оглушение'); if(en.blind>0) efx.push('ослепление'); if(en.blockReady) efx.push('блок');
+  if(en.stun>0)efx.push('оглушение '+en.stun);if(en.blind>0)efx.push('ослепление '+en.blind);if(en.blockReady)efx.push('блок');
+  if(state.stolenSkill)efx.push('умение «'+state.stolenSkill.name.replace(/^\S+\s*/,'')+'» украдено');
   el('enemyState').innerHTML=[
     '┣ 🖤 ХП: '+Math.round(en.hp)+'/'+Math.round(en.maxHp),
     '┣ <span class="bar">'+bar(en.hp,en.maxHp)+'</span> ('+pct(en.hp,en.maxHp)+'%)',
     '┣ 🗡 Атк: '+Math.round(en.attackMin)+'-'+Math.round(en.attackMax),
-    '┣ 🪖 Физ.защ: '+Math.round(en.physDef)+' | ✨ Маг.защ: '+Math.round(en.magDef),
+    '┣ 🪖 Физ. защ: '+Math.round(en.physDef)+' | ✨ Маг. защ: '+Math.round(en.magDef),
     '┣ 🛡 Щит: '+Math.round(en.shield||0),
     '┗ Эффекты: '+(efx.length?efx.join(', '):'нет')
   ].join('<br>');
 
   const badges=[];
-  if(p.dodgeNext) badges.push('<div class="badge">Уклонение</div>');
-  if(p.reflectNext) badges.push('<div class="badge">Отражение</div>');
-  if(p.oneHitReduction>0) badges.push('<div class="badge">Редук '+Math.round(p.oneHitReduction*100)+'%</div>');
-  if(p.vampTurns>0) badges.push('<div class="badge">Вамп '+Math.round(p.vampPct*100)+'%/'+p.vampTurns+'</div>');
-  if(p.doubleIncomingNext) badges.push('<div class="badge">Урон ×2</div>');
-  if(en.stun>0) badges.push('<div class="badge">Враг: оглушён</div>');
-  if(en.blind>0) badges.push('<div class="badge">Враг: ослеплён</div>');
+  if(state.dishonestExchangeActive)badges.push('<div class="badge">↩️ Обмен активен</div>');
+  if(state.illusionActive)badges.push('<div class="badge">🪬 Иллюзия</div>');
+  if(state.stolenSkill)badges.push('<div class="badge">🎭 Украдено: '+escHtml(state.stolenSkill.name)+'</div>');
+  if(p.ignoreAllNext)badges.push('<div class="badge">Игнор всего урона</div>');
+  if(p.ignoreSkillTurns>0)badges.push('<div class="badge">Игнор умений: '+p.ignoreSkillTurns+'</div>');
+  if(p.ignoreBasicTurns>0)badges.push('<div class="badge">Игнор с руки: '+p.ignoreBasicTurns+'</div>');
+  if(p.reflectNext)badges.push('<div class="badge">Отражение</div>');
+  if(p.oneHitReduction>0)badges.push('<div class="badge">Снижение '+Math.round(p.oneHitReduction*100)+'%</div>');
+  if(p.vampTurns>0)badges.push('<div class="badge">Вамп '+Math.round(p.vampPct*100)+'% / '+p.vampTurns+'</div>');
+  if(p.regenTurns>0)badges.push('<div class="badge">Реген '+p.regenTurns+'</div>');
+  if(p.resurrectThisTurn)badges.push('<div class="badge">Воскрешение готово</div>');
+  if(en.stun>0)badges.push('<div class="badge">Враг оглушён</div>');
+  if(en.blind>0)badges.push('<div class="badge">Враг ослеплён</div>');
   el('statusBadges').innerHTML=badges.length?badges.join(''):'<div class="badge">Эффектов нет</div>';
 
   const logEl=el('log');
-  logEl.innerHTML=state.logs.map(x=>'<div class="entry">'+escHtml(x)+'</div>').join('');
-  logEl.scrollTop=logEl.scrollHeight;
+  logEl.innerHTML=state.logs.map(x=>'<div class="entry">'+escHtml(x)+'</div>').join('');logEl.scrollTop=logEl.scrollHeight;
 
-  el('runs').textContent=state.sim.runs;
-  el('wins').textContent=state.sim.wins;
-  el('losses').textContent=state.sim.losses;
-  el('avgTurns').textContent=state.sim.avgTurns.toFixed(1);
-  el('avgCast').textContent=Math.round(state.sim.avgCastDamage);
-  el('avgEnemy').textContent=Math.round(state.sim.avgEnemyDamage);
-  el('avgPoison').textContent=Math.round(state.sim.avgPoison);
-  el('avgPhys').textContent=Math.round(state.sim.avgPhys);
+  el('runs').textContent=state.sim.runs;el('wins').textContent=state.sim.wins;el('losses').textContent=state.sim.losses;
+  el('avgTurns').textContent=state.sim.avgTurns.toFixed(1);el('avgCast').textContent=Math.round(state.sim.avgCastDamage);
+  el('avgEnemy').textContent=Math.round(state.sim.avgEnemyDamage);el('avgPoison').textContent=Math.round(state.sim.avgPoison);el('avgPhys').textContent=Math.round(state.sim.avgPhys);
 
-  // Превью эффектов
-  const total=EFFECTS.reduce((s,e)=>s+RARITY_WEIGHTS[e.rarity],0);
-  el('effectsPreview').innerHTML=EFFECTS.map(e=>{
-    const prob=(RARITY_WEIGHTS[e.rarity]/total*100).toFixed(1);
-    return '<div class="effect-card rarity-'+e.rarity+'"><div class="name">'+escHtml(e.name)+'<span style="color:var(--muted);font-size:11px;font-weight:400;margin-left:6px">'+RARITY_LABELS[e.rarity]+' ('+prob+'%)</span></div><div class="desc">'+escHtml(e.desc)+'</div></div>';
-  }).join('');
+  el('effectsPreview').innerHTML=EFFECTS.map(e=>
+    '<div class="effect-card rarity-'+e.rarity+'"><div class="name">'+escHtml(e.type+' — '+e.name)+'<span style="color:var(--muted);font-size:11px;font-weight:400;margin-left:6px">'+RARITY_LABELS[e.rarity]+'</span></div><div class="desc">'+escHtml(e.desc)+'</div></div>'
+  ).join('');
 }
 
 // ===== СИМУЛЯЦИЯ =====
-function snapshotState(){ return JSON.parse(JSON.stringify(state)); }
-function restoreState(snap){ Object.assign(state,JSON.parse(JSON.stringify(snap))); }
-
+function snapshotState(){return JSON.parse(JSON.stringify(state));}
+function restoreState(snap){Object.assign(state,JSON.parse(JSON.stringify(snap)));}
 function simulateOneFight(limitRounds){
-  const snap=snapshotState();
-  state.isSimulating=true;
-  startBattle(true);
+  const snap=snapshotState();state.isSimulating=true;startBattle(true);
   let tCast=0,tEnemy=0,tPoison=0,tPhys=0,castN=0,physN=0,rPlayed=0;
   while(!state.battleOver&&rPlayed<limitRounds){
-    if(!state.playerTurn) break;
-    rPlayed++;
+    if(!state.playerTurn)break;rPlayed++;
     let action='burst';
-    if(state.cds.shadow===0&&state.player.mp>=50&&rPlayed%6===0) action='shadow';
-    else if(state.player.mp<10&&state.player.mpPotions>0) action='mpPotion';
-    else if(state.player.mp<10) action='physAttack';
-    const s=performRound(action);
-    if(!s) break;
-    tEnemy+=s.enemyDamage; tPoison+=s.poisonDamage;
-    if(action==='burst'){ tCast+=s.playerDamage; castN++; }
-    if(action==='physAttack'){ tPhys+=s.playerDamage; physN++; }
+    if(state.stolenSkill)action='stolenSkill';
+    else if(state.cds.shadow===0&&state.player.mp>=100&&rPlayed%4===0)action='shadow';
+    else if(state.player.mp<50)action='physAttack';
+    const result=performRound(action);if(!result)break;
+    tEnemy+=result.enemyDamage;tPoison+=result.poisonDamage;
+    if(action==='burst'){tCast+=result.playerDamage;castN++;}
+    if(action==='physAttack'){tPhys+=result.playerDamage;physN++;}
   }
-  const result={
-    avgCastDamage:castN?tCast/castN:0, avgEnemyDamage:rPlayed?tEnemy/rPlayed:0,
-    avgPoison:rPlayed?tPoison/rPlayed:0, avgPhys:physN?tPhys/physN:0,
-    win:state.enemy.hp<=0&&state.player.hp>0, loss:state.player.hp<=0, rounds:rPlayed
-  };
-  restoreState(snap); state.isSimulating=false;
-  return result;
+  const result={avgCastDamage:castN?tCast/castN:0,avgEnemyDamage:rPlayed?tEnemy/rPlayed:0,avgPoison:rPlayed?tPoison/rPlayed:0,avgPhys:physN?tPhys/physN:0,win:state.enemy.hp<=0&&state.player.hp>0,loss:state.player.hp<=0,rounds:rPlayed};
+  restoreState(snap);state.isSimulating=false;return result;
 }
-
 function runSimulation(limitRounds,runs=100){
-  const snap=snapshotState();
-  let cast=0,enemy=0,poison=0,phys=0,wins=0,losses=0,rounds=0;
-  for(let i=0;i<runs;i++){
-    const x=simulateOneFight(limitRounds);
-    cast+=x.avgCastDamage; enemy+=x.avgEnemyDamage; poison+=x.avgPoison; phys+=x.avgPhys;
-    rounds+=x.rounds; if(x.win) wins++; if(x.loss) losses++;
-  }
-  restoreState(snap);
-  state.sim={runs,avgCastDamage:cast/runs,avgEnemyDamage:enemy/runs,avgPoison:poison/runs,avgPhys:phys/runs,wins,losses,avgTurns:rounds/runs};
-  render();
+  const snap=snapshotState();let cast=0,enemy=0,poison=0,phys=0,wins=0,losses=0,rounds=0;
+  for(let i=0;i<runs;i++){const x=simulateOneFight(limitRounds);cast+=x.avgCastDamage;enemy+=x.avgEnemyDamage;poison+=x.avgPoison;phys+=x.avgPhys;rounds+=x.rounds;if(x.win)wins++;if(x.loss)losses++;}
+  restoreState(snap);state.sim={runs,avgCastDamage:cast/runs,avgEnemyDamage:enemy/runs,avgPoison:poison/runs,avgPhys:phys/runs,wins,losses,avgTurns:rounds/runs};render();
 }
 
 // ===== СОБЫТИЯ =====
 [
   'pMaxHp','pMaxMp','pMaxSt','pStr','pInt','pPhysWeapon','pMagWeapon','pLuck',
-  'pUnstableLevel','pGodLevel','pCritChance','pCritMult','pBurstMult',
+  'pUnstableLevel','pGodLevel','pCritChance','pCritMult',
   'eMaxHp','eAttackMin','eAttackMax','ePhysDef','eMagDef'
-].forEach(id=>{ if(el(id)) el(id).addEventListener('input',()=>{ readInputsToState(false); render(); }); });
+].forEach(id=>{if(el(id))el(id).addEventListener('input',()=>{readInputsToState(false);render();});});
 
-el('btnStart').addEventListener('click',e=>{ e.preventDefault(); startBattle(false); });
-el('btnReset').addEventListener('click',e=>{ e.preventDefault(); resetBattle(); });
-el('btnCast').addEventListener('click',e=>{ e.preventDefault(); performRound('burst'); });
-el('btnShadow').addEventListener('click',e=>{ e.preventDefault(); performRound('shadow'); });
-el('btnPhysAttack').addEventListener('click',e=>{ e.preventDefault(); performRound('physAttack'); });
-el('btnMagAttack').addEventListener('click',e=>{ e.preventDefault(); performRound('magAttack'); });
-el('btnHpPotion').addEventListener('click',e=>{ e.preventDefault(); performRound('hpPotion'); });
-el('btnMpPotion').addEventListener('click',e=>{ e.preventDefault(); performRound('mpPotion'); });
-el('btnSim4').addEventListener('click',e=>{ e.preventDefault(); runSimulation(4); });
-el('btnSim8').addEventListener('click',e=>{ e.preventDefault(); runSimulation(8); });
-el('btnSim20').addEventListener('click',e=>{ e.preventDefault(); runSimulation(20); });
+el('btnStart').addEventListener('click',e=>{e.preventDefault();startBattle(false);});
+el('btnReset').addEventListener('click',e=>{e.preventDefault();resetBattle();});
+el('btnCast').addEventListener('click',e=>{e.preventDefault();performRound('burst');});
+el('btnShadow').addEventListener('click',e=>{e.preventDefault();performRound('shadow');});
+el('btnStolen').addEventListener('click',e=>{e.preventDefault();performRound('stolenSkill');});
+el('btnPhysAttack').addEventListener('click',e=>{e.preventDefault();performRound('physAttack');});
+el('btnMagAttack').addEventListener('click',e=>{e.preventDefault();performRound('magAttack');});
+el('btnSim4').addEventListener('click',e=>{e.preventDefault();runSimulation(4);});
+el('btnSim8').addEventListener('click',e=>{e.preventDefault();runSimulation(8);});
+el('btnSim20').addEventListener('click',e=>{e.preventDefault();runSimulation(20);});
 
 buildEnemySkillsUI();
 resetBattle();
+
 </script>
 </body>
 </html>
